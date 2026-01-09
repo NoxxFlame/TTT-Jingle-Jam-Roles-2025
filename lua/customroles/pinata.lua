@@ -211,7 +211,7 @@ if CLIENT then
         if ply:IsRoleAbilityDisabled() then return end
 
         ------ icon , ring , text
-        return false, false, target.TTTPinatasDamaged and TableHasValue(target.TTTPinatasDamaged, cli:SteamID64())
+        return false, false, target.TTTPinatasDamaged and TableHasValue(target.TTTPinatasDamaged, ply:SteamID64())
     end
 
     ----------------
