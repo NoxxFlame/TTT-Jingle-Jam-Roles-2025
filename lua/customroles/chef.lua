@@ -20,7 +20,10 @@ ROLE.translations = {
     ["english"] = {
         ["chf_stove_name"] = "Stove",
         ["chf_stove_name_health"] = "Stove ({current}/{max})",
-        ["chf_stove_hint"] = "",
+        ["chf_stove_hint_start"] = "Press {usekey} to start cooking",
+        ["chf_stove_hint_progress"] = "Cooking: {time} remaining",
+        ["chf_stove_hint_retrieve_2"] = "Press {usekey} to retrieve cooked food before it burns!",
+        ["chf_stove_hint_retrieve_3"] = "Press {usekey} to retrieve burnt food",
         ["chf_stove_damaged"] = "Your Stove has been damaged!",
         ["chf_stove_help_pri"] = "Use {primaryfire} to place your Stove on the ground",
         ["chf_stove_help_sec"] = "Use {secondaryfire} to change the food and buff type",
@@ -40,6 +43,7 @@ ROLE.translations = {
 
 RegisterRole(ROLE)
 
+-- Role features
 CHEF_FOOD_TYPE_NONE = 0
 CHEF_FOOD_TYPE_BURGER = 1
 CHEF_FOOD_TYPE_HOTDOG = 2

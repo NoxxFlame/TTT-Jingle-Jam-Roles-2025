@@ -2,6 +2,12 @@ if SERVER then
     AddCSLuaFile()
 end
 
+-- State
+CHEF_STOVE_STATE_IDLE = 0
+CHEF_STOVE_STATE_COOKING = 1
+CHEF_STOVE_STATE_DONE = 2
+CHEF_STOVE_STATE_BURNT = 3
+
 if CLIENT then
     local hint_params = {usekey = Key("+use", "USE")}
 
@@ -22,17 +28,23 @@ if CLIENT then
             fmt  = function(ent, txt)
                 if not IsValid(stove) then return nil end
 
+                local placer = stove:GetPlacer()
+                if not IsPlayer(placer) then return nil end
+                if placer ~= client then return nil end
+
                 local hint = txt
-                if cooking then
-                    -- TODO: Time progress + status (cooking || done || burnt)
-                    if ent:GetPlacer() == client and (done or burnt) then
-                        -- TODO: Press "E" to retrieve food
-                    end
-                elseif ent:GetPlacer() == client then
-                    -- TODO: Press "E" to start cooking
+                local status = stove:GetStatus()
+                if status == CHEF_STOVE_STATE_COOKING then
+                    local remaining = CurTime() - stove:GetEndTime()
+                    hint_params.time = util.SimpleTime(remaining, "%02i:%02i")
+                    hint = hint .. "_cooking"
+                elseif status >= CHEF_STOVE_STATE_DONE then
+                    hint = hint .. "_retrieve_" .. status
+                else
+                    hint = hint .. "_start"
                 end
 
-                return nil--LANG.GetParamTranslation(hint, hint_params)
+                return LANG.GetParamTranslation(hint, hint_params)
             end
         }
     end
@@ -45,7 +57,8 @@ ENT.CanUseKey = true
 ENT.StoveModel = "models/props_forest/stove01.mdl"
 
 AccessorFuncDT(ENT, "FoodType", "FoodType")
-AccessorFuncDT(ENT, "StartTime", "StartTime")
+AccessorFuncDT(ENT, "EndTime", "EndTime")
+AccessorFuncDT(ENT, "State", "State")
 AccessorFuncDT(ENT, "Placer", "Placer")
 
 local food_model =
@@ -57,7 +70,8 @@ local food_model =
 
 function ENT:SetupDataTables()
    self:DTVar("Int", 0, "FoodType")
-   self:DTVar("Int", 1, "StartTime")
+   self:DTVar("Int", 1, "EndTime")
+   self:DTVar("Int", 2, "State")
    self:DTVar("Entity", 0, "Placer")
 end
 
@@ -80,6 +94,13 @@ function ENT:Initialize()
 
     self:WeldToGround(true)
     self:SetUseType(CONTINUOUS_USE)
+end
+
+function ENT:Use(ply)
+    if not IsPlayer(ply) then return end
+    if ply:IsActive() then return end
+
+    print(food_model[self:GetFoodType()])
 end
 
 if SERVER then
