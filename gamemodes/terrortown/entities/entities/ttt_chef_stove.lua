@@ -146,7 +146,7 @@ if SERVER then
             self:SetState(CHEF_STOVE_STATE_COOKING)
         else
             local food = CreateEntity("ttt_chef_food")
-            food:SetPos(self:GetPos() + Vector(0, 0, 20))
+            food:SetPos(self:GetPos() + Vector(0, 0, 30))
             food:SetChef(placer)
             food:SetFoodType(self:GetFoodType())
             if state == CHEF_STOVE_STATE_BURNT then
