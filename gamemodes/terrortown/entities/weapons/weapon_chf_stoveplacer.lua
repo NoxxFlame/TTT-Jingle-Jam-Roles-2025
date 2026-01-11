@@ -141,34 +141,27 @@ function SWEP:PrimaryAttack()
     local tr, hit = self:GetAimTrace(owner)
     if not hit then return end
 
-    self:SendWeaponAnim(ACT_VM_DOWN)
-    timer.Simple(self:SequenceDuration(), function()
-        if not IsPlayer(owner) then return end
-        if not IsValid(self) then return end
+    local stove = ents.Create("ttt_chef_stove")
+    local eyeAngles = owner:EyeAngles()
+    local ang = Angle(0, eyeAngles.y, 0)
+    ang:RotateAroundAxis(Vector(0, 0, 1), 180)
 
-        local stove = ents.Create("ttt_chef_stove")
-        local eyeAngles = owner:EyeAngles()
-        local ang = Angle(0, eyeAngles.y, 0)
-        ang:RotateAroundAxis(Vector(0, 0, 1), 180)
+    local offset = owner:GetAimVector() * 15
+    offset.z = -5
 
-        local offset = owner:GetAimVector() * 15
-        offset.z = -5
+    -- Spawn the stove
+    stove:SetPos(tr.HitPos - offset)
+    stove:SetAngles(ang)
+    stove:SetPlacer(owner)
+    stove:SetFoodType(self.SelectedFoodType)
 
-        -- Spawn the stove
-        stove:SetPos(tr.HitPos - offset)
-        stove:SetAngles(ang)
-        stove:SetPlacer(owner)
-        stove:SetFoodType(self.SelectedFoodType)
-        owner.TTTChefStove = stove
+    local health = stove_health:GetInt()
+    stove:SetHealth(health)
+    stove:SetMaxHealth(health)
 
-        local health = stove_health:GetInt()
-        stove:SetHealth(health)
-        stove:SetMaxHealth(health)
+    stove:Spawn()
 
-        stove:Spawn()
-
-        self:Remove()
-    end)
+    self:Remove()
 end
 
 function SWEP:SecondaryAttack()
