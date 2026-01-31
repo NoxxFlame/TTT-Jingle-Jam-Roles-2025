@@ -33,6 +33,22 @@ ttt_chef_burnt_interval   1   // How often the burnt food eater's health should 
 ttt_chef_burnt_amount     1   // The amount of the burnt food eater's health to remove per interval
 ```
 
+## ![Role Icon](/gamemodes/terrortown/content/materials/vgui/ttt/roles/pin/tab_pin.png) Piñata
+_Suggested By_: detection.exe\
+The Piñata is an Independent role that drops shop weapons on an interval based on how much damage they take. They also cannot damage another player unless they are damaged by them first.
+\
+\
+**ConVars**
+```cpp
+ttt_pinata_enabled                  0   // Whether or not a Piñata should spawn
+ttt_pinata_spawn_weight             1   // The weight assigned to spawning a Piñata
+ttt_pinata_min_players              0   // The minimum number of players required to spawn a Piñata
+ttt_pinata_starting_health          150 // The amount of health a Piñata starts with
+ttt_pinata_max_health               150 // The maximum amount of health a Piñata can have
+ttt_pinata_damage_interval          20  // How much damage the Piñata must take between weapon drops
+ttt_pinata_announce                 1   // Whether to announce to everyone that there is a Piñata in the round
+```
+
 ## ![Role Icon](/gamemodes/terrortown/content/materials/vgui/ttt/roles/rsw/tab_rsw.png) Randoswapper
 _Suggested By_: CamelChip\
 The Randoswapper is a Jester role that swaps roles with their killer and triggers a Randomat event instead of dying.

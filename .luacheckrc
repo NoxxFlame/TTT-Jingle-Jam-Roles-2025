@@ -1270,7 +1270,9 @@ globals = {
     "RANDOSWAPPER_WEAPON_NONE",
     "RANDOSWAPPER_WEAPON_ROLE",
     "ROLE_CHEF",
-    "ROLE_RANDOSWAPPER"
+    "ROLE_PINATA",
+    "ROLE_RANDOSWAPPER",
+    "WIN_PINATA"
 }
 std = {
     globals = {
