@@ -355,6 +355,9 @@ if CLIENT then
                 if target_jesters then
                     html = html .. "<li>" .. T("jesters") .. "</li>"
                 end
+                if target_monsters then
+                    html = html .. "<li>" .. T("monsters") .. "</li>"
+                end
                 html = html .. "</ul></span>"
             end
 
