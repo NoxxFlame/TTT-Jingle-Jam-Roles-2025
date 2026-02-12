@@ -94,7 +94,7 @@ ttt_safekeeper_warn_pick_start    1    // Whether to warn a safe's owner when so
 ttt_safekeeper_warn_pick_complete 1    // Whether to warn a safe's owner when it is picked
 ttt_safekeeper_move_safe          1    // Whether an Safekeeper can move their safe
 ttt_safekeeper_move_cooldown      30   // How long a Safekeeper must wait after placing their safe before they can move it again
-ttt_safekeeper_weapons_dropped    8    // How many weapons the Safekeeper's safe drops when it is picked open
+ttt_safekeeper_weapons_dropped    4    // How many weapons the Safekeeper's safe drops when it is picked open
 ```
 
 **Hooks**

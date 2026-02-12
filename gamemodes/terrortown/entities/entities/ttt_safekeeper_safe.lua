@@ -107,7 +107,7 @@ function ENT:Initialize()
 end
 
 if SERVER then
-    local safekeeper_weapons_dropped = CreateConVar("ttt_safekeeper_weapons_dropped", "8", FCVAR_NONE, "How many weapons the Safekeeper's safe drops when it is picked open", 0, 10)
+    local safekeeper_weapons_dropped = CreateConVar("ttt_safekeeper_weapons_dropped", "4", FCVAR_NONE, "How many weapons the Safekeeper's safe drops when it is picked open", 0, 10)
     local safekeeper_warn_pick_start = CreateConVar("ttt_safekeeper_warn_pick_start", "1", FCVAR_NONE, "Whether to warn a safe's owner when someone starts picking it", 0, 1)
     local safekeeper_warn_pick_complete = CreateConVar("ttt_safekeeper_warn_pick_complete", "1", FCVAR_NONE, "Whether to warn a safe's owner when it is picked", 0, 1)
 
@@ -153,8 +153,10 @@ if SERVER then
         if not opener:Alive() or opener:IsSpec() then return end
 
         local placer = self:GetPlacer()
-        if IsPlayer(placer) and safekeeper_warn_pick_complete:GetBool() then
-            placer:QueueMessage(MSG_PRINTBOTH, "Your safe has been picked!")
+        if not IsPlayer(placer) then return end
+
+        if safekeeper_warn_pick_complete:GetBool() then
+            placer:QueueMessage(MSG_PRINTBOTH, "Your safe has been picked by " .. opener:Nick() .. ", get them!")
             net.Start("TTT_SafekeeperPlaySound")
                 net.WriteString("open")
             net.Send(placer)
@@ -166,6 +168,16 @@ if SERVER then
         if boneId >= 0 then
             self:SetBodygroup(boneId, 1)
         end
+
+        local placerSid64 = placer:SteamID64()
+        local lootedList
+        if opener.TTTSafekeeperLootedList then
+            lootedList = TTTSafekeeperLootedList
+        else
+            lootedList = {}
+        end
+        TableInsert(lootedList, placerSid64)
+        opener:SetProperty("TTTSafekeeperLootedList", lootedList)
 
         local lootTable = {}
         local safe = self
@@ -192,7 +204,7 @@ if SERVER then
             local pos = safe:GetPos() + ang:Forward() * -10
             local ent = CreateEntity(wep)
             ent:SetPos(pos)
-            ent.TTTSafekeeperSpawnedBy = ownerSid64
+            ent.TTTSafekeeperSpawnedBy = placerSid64
             ent:Spawn()
 
             local phys = ent:GetPhysicsObject()

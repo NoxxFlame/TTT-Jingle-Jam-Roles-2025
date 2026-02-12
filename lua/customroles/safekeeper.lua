@@ -10,6 +10,7 @@ local AddHook = hook.Add
 local EntsFindByClass = ents.FindByClass
 local MathRandom = math.random
 local PlayerIterator = player.Iterator
+local TableHasValue = table.HasValue
 local TableInsert = table.insert
 
 local ROLE = {}
@@ -93,7 +94,8 @@ ROLE.translations = {
         ["sfk_safe_hint_open"] = "Already picked and looted",
         ["safekeeper_picking"] = "PICKING",
         ["safekeeper_hud_drop"] = "You will drop your safe in: {time}",
-        ["safekeeper_hud_warmup"] = "You will get your safe in: {time}"
+        ["safekeeper_hud_warmup"] = "You will get your safe in: {time}",
+        ["safekeeper_target_looter"] = "LOOTER"
     }
 }
 
@@ -189,8 +191,38 @@ if SERVER then
 
     -- Automatically switch to the safe placers when they player gets it and
     -- start the auto-drop timer
+    -- Also track who loots the items that come out of the safe
     AddHook("WeaponEquip", "Safekeeper_WeaponEquip", function(wep, ply)
         if not IsPlayer(ply) then return end
+
+        -- If this weapon is from a Safekeeper's safe, 
+        -- keep track of which Safekeepers this person has looted
+        if wep.TTTSafekeeperSpawnedBy and #wep.TTTSafekeeperSpawnedBy > 0 then
+            if wep.TTTSafekeeperTracked then return end
+
+            -- Only track the first player who picks it up, but don't reset "spawned by"
+            -- so that the Safekeeper can never pick it up, even by colluding
+            wep.TTTSafekeeperTracked = true
+
+            local lootedList
+            if ply.TTTSafekeeperLootedList then
+                lootedList = ply.TTTSafekeeperLootedList
+            else
+                lootedList = {}
+            end
+
+            if not TableHasValue(lootedList, wep.TTTSafekeeperSpawnedBy) then
+                TableInsert(lootedList, wep.TTTSafekeeperSpawnedBy)
+                ply:SetProperty("TTTSafekeeperLootedList", lootedList)
+
+                local safekeeper = player.GetBySteamID64(wep.TTTSafekeeperSpawnedBy)
+                if IsPlayer(safekeeper) and safekeeper:Alive() and not safekeeper:IsSpec() then
+                    safekeeper:QueueMessage(MSG_PRINTBOTH, ply:Nick() .. " has looted something from your safe, get them!")
+                end
+            end
+            return
+        end
+
         if not ply:IsActiveSafekeeper() then return end
 
         local wepClass = WEPS.GetClass(wep)
@@ -246,6 +278,7 @@ if SERVER then
     AddHook("TTTPrepareRound", "Safekeeper_TTTPrepareRound", function()
         for _, v in PlayerIterator() do
             v.TTTSafekeeperLastPickTime = nil
+            v:ClearProperty("TTTSafekeeperLootedList")
             v:ClearProperty("TTTSafekeeperSafe")
             v:ClearProperty("TTTSafekeeperPickTarget", v)
             v:ClearProperty("TTTSafekeeperPickStart", v)
@@ -307,29 +340,95 @@ if CLIENT then
         surface.PlaySound("safekeeper/" .. soundType .. ".mp3")
     end)
 
-    ----------------------
-    -- SAFE REVEAL HALO --
-    ----------------------
+    ---------------
+    -- TARGET ID --
+    ---------------
 
-    AddHook("PreDrawHalos", "Safekeeper_Highlight_PreDrawHalos", function()
+    -- Show skull icon over the looters' heads
+    AddHook("TTTTargetIDPlayerTargetIcon", "Safekeeper_TTTTargetIDPlayerTargetIcon", function(ply, cli, showJester)
+        if not cli:IsSafekeeper() then return end
+        if not IsPlayer(ply) then return end
+        if not ply.TTTSafekeeperLootedList then return end
+        if not TableHasValue(ply.TTTSafekeeperLootedList, cli:SteamID64()) then return end
+        if cli:IsRoleAbilityDisabled() then return end
+
+        return "kill", true, ROLE_COLORS_SPRITE[ROLE_SAFEKEEPER], "down"
+    end)
+
+    -- And "LOOTER" under their name
+    hook.Add("TTTTargetIDPlayerText", "Safekeeper_TTTTargetIDPlayerText", function(ent, cli, text, col, secondary_text)
+        if not cli:IsSafekeeper() then return end
+        if not IsPlayer(ent) then return end
+        if not ent.TTTSafekeeperLootedList then return end
+        if not TableHasValue(ent.TTTSafekeeperLootedList, cli:SteamID64()) then return end
+        if cli:IsRoleAbilityDisabled() then return end
+
+        return LANG.GetTranslation("safekeeper_target_looter"), ROLE_COLORS_RADAR[ROLE_SAFEKEEPER], secondary_text
+    end)
+
+    ROLE.istargetidoverridden = function(ply, target, showJester)
+        if not ply:IsSafekeeper() then return end
+        if not IsPlayer(target) then return end
+        if not target.TTTSafekeeperLootedList then return end
+        if not TableHasValue(target.TTTSafekeeperLootedList, ply:SteamID64()) then return end
+        if ply:IsRoleAbilityDisabled() then return end
+
+        ------ icon,  ring,  text
+        return false, false, true
+    end
+
+    ---------------
+    -- HIGHLIGHT --
+    ---------------
+
+    ROLE.istargethighlighted = function(ply, target)
+        if not ply:IsSafekeeper() then return end
+        if not IsPlayer(target) then return end
+        if not target.TTTSafekeeperLootedList then return end
+        if ply:IsRoleAbilityDisabled() then return end
+
+        return TableHasValue(target.TTTSafekeeperLootedList, ply:SteamID64())
+    end
+
+    AddHook("PreDrawHalos", "Safekeeper_PreDrawHalos_Highlight", function()
         if not client then
             client = LocalPlayer()
         end
 
-        local targets = {}
+        local isSafekeeper = client:IsSafekeeper() and not client:IsRoleAbilityDisabled()
+        -- Highlight anyone who has looted this Safekeeper's safe
+        if isSafekeeper then
+            local sid64 = client:SteamID64()
+            local looters = {}
+            for _, p in PlayerIterator() do
+                if client == p then continue end
+                if not p:Alive() or p:IsSpec() then continue end
+                if not p.TTTSafekeeperLootedList then continue end
+
+                if TableHasValue(p.TTTSafekeeperLootedList, sid64) then
+                    TableInsert(looters, p)
+                end
+            end
+
+            if #looters > 0 then
+                halo.Add(looters, COLOR_RED, 1, 1, 1, true, true)
+            end
+        end
+
+        local safes = {}
         for _, e in ipairs(EntsFindByClass("ttt_safekeeper_safe")) do
             if not IsValid(e) then continue end
 
             local placer = e:GetPlacer()
             -- Show the safe to everyone if it's revealed, or just the placer if it isn't
-            if e.TTTSafekeeperSafeRevealed or (IsPlayer(placer) and client == placer) then
-                TableInsert(targets, e)
+            if e.TTTSafekeeperSafeRevealed or (isSafekeeper and IsPlayer(placer) and client == placer) then
+                TableInsert(safes, e)
             end
         end
 
-        if #targets == 0 then return end
+        if #safes == 0 then return end
 
-        halo.Add(targets, COLOR_WHITE, 1, 1, 1, true, true)
+        halo.Add(safes, COLOR_WHITE, 1, 1, 1, true, true)
     end)
 
     ----------------
@@ -348,6 +447,26 @@ if CLIENT then
 
             -- If the safe is still closed, they win
             if not safe:GetOpen() then
+                TableInsert(secondary_wins, ROLE_SAFEKEEPER)
+                return
+            else
+                local sid64 = p:SteamID64()
+                local foundAlive = false
+                -- Check that all the looters are dead
+                for _, l in PlayerIterator() do
+                    if p == l then continue end
+                    if not l.TTTSafekeeperLootedList then continue end
+
+                    -- We only need to find one to prevent the safekeeper from winning, so break early once we find one
+                    if TableHasValue(l.TTTSafekeeperLootedList, sid64) and l:Alive() and not l:IsSpec() then
+                        foundAlive = true
+                        break
+                    end
+                end
+
+                if foundAlive then continue end
+
+                -- If we made it through everyone without finding a living looter then the Safekeeper wins
                 TableInsert(secondary_wins, ROLE_SAFEKEEPER)
                 return
             end
@@ -399,9 +518,10 @@ if CLIENT then
             local html = "The " .. ROLE_STRINGS[ROLE_SAFEKEEPER] .. " is an <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>independent</span> role that is given a safe after a random delay to place somewhere on the map."
 
             -- Win condition
-            html = html .. "<span style='display: block; margin-top: 10px;'>To win, the " .. ROLE_STRINGS[ROLE_SAFEKEEPER] .. " must place their safe and it <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>must remain unpicked</span> for the rest of the round.</span>"
+            html = html .. "<span style='display: block; margin-top: 10px;'>To win, the " .. ROLE_STRINGS[ROLE_SAFEKEEPER] .. " must place their safe and <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>keep it protected</span> for the rest of the round.</span>"
 
-            -- TODO: Alternate win condition, if it is added
+            -- Alternate win condition
+            html = html .. "<span style='display: block; margin-top: 10px;'>If the " .. ROLE_STRINGS[ROLE_SAFEKEEPER] .. "'s safe is picked open, they can still win by <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>tracking down and killing anyone who got loot</span> from it.</span>"
 
             -- Auto-drop
             html = html .. "<span style='display: block; margin-top: 10px;'>The safe is quite heavy and so it <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>will automatically drop</span> if the " .. ROLE_STRINGS[ROLE_SAFEKEEPER] .. " holds it for too long, tries to switch weapons, or is killed.</span>"
