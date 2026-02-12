@@ -1,6 +1,11 @@
 local hook = hook
+local player = player
+local surface = surface
+local table = table
 
 local AddHook = hook.Add
+local PlayerIterator = player.Iterator
+local TableInsert = table.insert
 
 local ROLE = {}
 
@@ -22,20 +27,20 @@ ROLE.convars =
 
 ROLE.translations = {
     ["english"] = {
-        ["sfk_safe_help_pri"] = "Use {primaryfire} to drop your Safe on the ground",
+        ["sfk_safe_help_pri"] = "Use {primaryfire} to drop your safe on the ground",
+        ["sfk_safe_help_sec"] = "Switching weapons, dying, and getting too tired will drop the safe automatically",
         ["sfk_safe_name"] = "Safe",
         ["sfk_safe_hint"] = "Press {usekey} to pick up",
         ["sfk_safe_hint_nomove"] = "Don't let anyone open it!",
         ["sfk_safe_hint_cooldown"] = "Too tired to pick up... ({time})",
         ["sfk_safe_hint_pick"] = "Hold {usekey} to pick open",
         ["sfk_safe_hint_open"] = "Already picked and looted",
-        ["safekeeper_picking"] = "PICKING"
+        ["safekeeper_picking"] = "PICKING",
+        ["safekeeper_hud"] = "You will drop your safe in: {time}"
     }
 }
 
 ROLE.haspassivewin = true
-
-RegisterRole(ROLE)
 
 ------------------
 -- ROLE CONVARS --
@@ -48,6 +53,7 @@ if SERVER then
 
     local safekeeper_warn_pick_complete = CreateConVar("ttt_safekeeper_warn_pick_complete", "1", FCVAR_NONE, "Whether to warn an safe's owner is warned when it is picked", 0, 1)
     local safekeeper_pick_grace_time = CreateConVar("ttt_safekeeper_pick_grace_time", 0.25, FCVAR_NONE, "How long (in seconds) before the pick progress of a safe is reset when a player stops looking at it", 0, 1)
+    local safekeeper_drop_time = CreateConVar("ttt_safekeeper_drop_time", "30", FCVAR_NONE, "How long (in seconds) before the Safekeeper will automatically drop their safe", 1, 60)
 
     --------------------
     -- PICK TRACKING --
@@ -83,6 +89,62 @@ if SERVER then
 
         pickTarget:Open(ply)
     end)
+
+    -------------------
+    -- ROLE FEATURES --
+    -------------------
+
+    local function DropSafe(ply)
+        local wep = ply:GetWeapon("weapon_sfk_safeplacer")
+        if not IsValid(wep) then return end
+
+        wep:PrimaryAttack()
+    end
+
+    AddHook("DoPlayerDeath", "Safekeeper_DoPlayerDeath_DropSafe", function(ply, attacker, dmg)
+        if not IsPlayer(ply) then return end
+        if not ply:IsSafekeeper() then return end
+
+        DropSafe(ply)
+    end)
+
+    AddHook("WeaponEquip", "Safekeeper_WeaponEquip", function(wep, ply)
+        if not IsPlayer(ply) then return end
+        if not ply:IsActiveSafekeeper() then return end
+
+        local wepClass = WEPS.GetClass(wep)
+        if wepClass ~= "weapon_sfk_safeplacer" then return end
+
+        -- Slight delay before equipping to make sure they actually have it
+        timer.Simple(0.1, function()
+            if not IsPlayer(ply) then return end
+            ply:SelectWeapon(wepClass)
+
+            local drop_time = safekeeper_drop_time:GetInt()
+            ply:SetProperty("TTTSafekeeperDropTime", CurTime() + drop_time, ply)
+        end)
+    end)
+
+    AddHook("TTTPlayerAliveThink", "Safekeeper_TTTPlayerAliveThink", function(ply)
+        if not IsPlayer(ply) then return end
+        if not ply:IsSafekeeper() then return end
+        if not ply.TTTSafekeeperDropTime then return end
+
+        local remaining = ply.TTTSafekeeperDropTime - CurTime()
+        if remaining <= 0 then
+            DropSafe(ply)
+        end
+    end)
+
+    -------------
+    -- CLEANUP --
+    -------------
+
+    AddHook("TTTPrepareRound", "Safekeeper_TTTPrepareRound", function()
+        for _, v in PlayerIterator() do
+            v:ClearProperty("TTTSafekeeperDropTime", v)
+        end
+    end)
 end
 
 if CLIENT then
@@ -114,4 +176,34 @@ if CLIENT then
         local w = 300
         CRHUD:PaintProgressBar(x, y, w, COLOR_GREEN, text, progress)
     end)
+
+    ---------
+    -- HUD --
+    ---------
+
+    AddHook("TTTHUDInfoPaint", "Safekeeper_TTTHUDInfoPaint", function(cli, label_left, label_top, active_labels)
+        if not cli:IsActiveSafekeeper() then return end
+
+        surface.SetFont("TabLarge")
+        surface.SetTextColor(255, 255, 255, 230)
+
+        if not cli.TTTSafekeeperDropTime then return end
+
+        local remaining = cli.TTTSafekeeperDropTime - CurTime()
+        if remaining <= 0 then return end
+
+        local text = LANG.GetParamTranslation("safekeeper_hud", { time = util.SimpleTime(remaining, "%02i:%02i") })
+        local _, h = surface.GetTextSize(text)
+
+        -- Move this up based on how many other labels here are
+        label_top = label_top + (20 * #active_labels)
+
+        surface.SetTextPos(label_left, ScrH() - label_top - h)
+        surface.DrawText(text)
+
+        -- Track that the label was added so others can position accurately
+        TableInsert(active_labels, "safekeeper")
+    end)
 end
+
+RegisterRole(ROLE)

@@ -49,7 +49,7 @@ SWEP.Secondary.Sound        = ""
 
 function SWEP:Initialize()
     if CLIENT then
-        self:AddHUDHelp("sfk_safe_help_pri", nil, true)
+        self:AddHUDHelp("sfk_safe_help_pri", "sfk_safe_help_sec", true)
     end
     self:SetWeaponHoldType(self.HoldType)
 end
@@ -138,6 +138,7 @@ function SWEP:PrimaryAttack()
     safe:Spawn()
     safe:Activate()
 
+    owner:ClearProperty("TTTSafekeeperDropTime", owner)
     self:Remove()
 end
 
@@ -149,4 +150,8 @@ end
 
 function SWEP:OnDrop()
     self:Remove()
+end
+
+function SWEP:Holster(wep)
+    self:PrimaryAttack()
 end

@@ -19,6 +19,7 @@ if CLIENT then
             hint = "sfk_safe_hint",
             fmt  = function(ent, txt)
                 if not IsValid(safe) then return nil end
+                if not client:Alive() or client:IsSpec() then return nil end
 
                 local placer = safe:GetPlacer()
                 if not IsPlayer(placer) then return nil end
