@@ -72,6 +72,12 @@ if CLIENT then
         ScaleModel(vm, 0.5)
     end
 
+    -- Reset the scale of the view model after drawing it to fix a weird case where other weapons got scaled down
+    -- even after the player no longer had this one
+    function SWEP:PostDrawViewModel(vm, weapon, ply, flags)
+        ScaleModel(vm, 1)
+    end
+
     -- Adapted from: https://wiki.facepunch.com/gmod/WEAPON:DrawWorldModel
     SWEP.ClientWorldModel = nil
     function SWEP:DrawWorldModel(flags)
