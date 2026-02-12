@@ -5,6 +5,7 @@ end
 local table = table
 
 local safekeeper_move_safe = CreateConVar("ttt_safekeeper_move_safe", "1", FCVAR_REPLICATED, "Whether an Safekeeper can move their safe", 0, 1)
+local safekeeper_move_cooldown = CreateConVar("ttt_safekeeper_move_cooldown", "30", FCVAR_REPLICATED, "How long a Safekeeper must wait after placing their safe before they can move it again", 0, 120)
 
 if CLIENT then
     local hint_params = {usekey = Key("+use", "USE")}
@@ -22,11 +23,17 @@ if CLIENT then
                 local placer = safe:GetPlacer()
                 if not IsPlayer(placer) then return nil end
 
+                local remaining = safe:GetEndTime() - CurTime()
                 local hint = txt
                 if safe:GetOpen() then
                     hint = hint .. "_open"
                 elseif placer ~= client then
                     hint = hint .. "_pick"
+                elseif not safekeeper_move_safe:GetBool() then
+                    hint = hint .. "_nomove"
+                elseif safekeeper_move_cooldown:GetInt() > 0 and remaining > 0 then
+                    hint = hint .. "_cooldown"
+                    hint_params.time = util.SimpleTime(remaining, "%02i:%02i")
                 end
 
                 return LANG.GetParamTranslation(hint, hint_params)
@@ -57,6 +64,7 @@ function ENT:SetupDataTables()
 end
 
 function ENT:Initialize()
+    self:SetEndTime(CurTime() + safekeeper_move_cooldown:GetInt())
     self:SetModel(self.SafeModel)
 
     if SERVER then
@@ -95,16 +103,18 @@ if SERVER then
 
         local placer = self:GetPlacer()
         if not IsPlayer(placer) then return end
+
+        local curTime = CurTime()
         if activator == placer then
             if not safekeeper_move_safe:GetBool() then return end
+
+            if (self:GetEndTime() - curTime) > 0 then return end
 
             activator:Give("weapon_sfk_safeplacer")
             self:SetPlacer(nil)
             self:Remove()
             return
         end
-
-        local curTime = CurTime()
 
         -- If this is a new activator, start tracking how long they've been using it for
         local stealTarget = activator.SafekeeperPickTarget
