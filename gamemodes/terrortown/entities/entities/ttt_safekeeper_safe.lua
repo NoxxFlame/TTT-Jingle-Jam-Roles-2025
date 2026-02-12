@@ -162,6 +162,11 @@ if SERVER then
             net.Send(placer)
         end
 
+        net.Start("TTT_SafekeeperSafePicked")
+            net.WriteString(placer:Nick())
+            net.WriteString(opener:Nick())
+        net.Broadcast()
+
         self:SetOpen(true)
         -- Change to model "Base1" Submodel 1 to show the door as open
         local boneId = self:FindBodygroupByName("Base1")

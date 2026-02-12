@@ -95,7 +95,8 @@ ROLE.translations = {
         ["safekeeper_picking"] = "PICKING",
         ["safekeeper_hud_drop"] = "You will drop your safe in: {time}",
         ["safekeeper_hud_warmup"] = "You will get your safe in: {time}",
-        ["safekeeper_target_looter"] = "LOOTER"
+        ["safekeeper_target_looter"] = "LOOTER",
+        ["ev_safekeeperpicked"] = "{safekeeper}'s safe was picked open by {picker}"
     }
 }
 
@@ -111,6 +112,7 @@ if SERVER then
     AddCSLuaFile()
 
     util.AddNetworkString("TTT_SafekeeperPlaySound")
+    util.AddNetworkString("TTT_SafekeeperSafePicked")
 
     local safekeeper_pick_grace_time = CreateConVar("ttt_safekeeper_pick_grace_time", 0.25, FCVAR_NONE, "How long (in seconds) before the pick progress of a safe is reset when a player stops looking at it", 0, 1)
     local safekeeper_warmup_time_min = CreateConVar("ttt_safekeeper_warmup_time_min", "30", FCVAR_NONE, "Minimum time (in seconds) before the Safekeeper will be given their safe", 1, 60)
@@ -271,6 +273,14 @@ if SERVER then
         end
     end)
 
+    ------------
+    -- EVENTS --
+    ------------
+
+    AddHook("Initialize", "Safekeeper_Initialize", function()
+        EVENT_SAFEKEEPERPICKED = GenerateNewEventID(ROLE_SAFEKEEPER)
+    end)
+
     -------------
     -- CLEANUP --
     -------------
@@ -429,6 +439,34 @@ if CLIENT then
         if #safes == 0 then return end
 
         halo.Add(safes, COLOR_WHITE, 1, 1, 1, true, true)
+    end)
+
+    ------------
+    -- EVENTS --
+    ------------
+
+    AddHook("TTTSyncEventIDs", "Safekeeper_TTTSyncEventIDs", function()
+        EVENT_SAFEKEEPERPICKED = EVENTS_BY_ROLE[ROLE_SAFEKEEPER]
+        local swap_icon = Material("icon16/lock_open.png")
+        local Event = CLSCORE.DeclareEventDisplay
+        local PT = LANG.GetParamTranslation
+        Event(EVENT_SAFEKEEPERPICKED, {
+            text = function(e)
+                return PT("ev_safekeeperpicked", {safekeeper = e.sfk, picker = e.pick})
+            end,
+            icon = function(e)
+                return swap_icon, "Safe Picked"
+            end})
+    end)
+
+    net.Receive("TTT_SafekeeperSafePicked", function(len)
+        local safekeeper = net.ReadString()
+        local picker = net.ReadString()
+        CLSCORE:AddEvent({
+            id = EVENT_SAFEKEEPERPICKED,
+            sfk = safekeeper,
+            pick = picker
+        })
     end)
 
     ----------------
