@@ -32,8 +32,8 @@ SWEP.UseHands               = false
 SWEP.LimitedStock           = true
 SWEP.AmmoEnt                = nil
 
-SWEP.InLoadoutFor           = {ROLE_SAFEKEEPER}
-SWEP.InLoadoutForDefault    = {ROLE_SAFEKEEPER}
+SWEP.InLoadoutFor           = {}
+SWEP.InLoadoutForDefault    = {}
 
 SWEP.Primary.Delay          = 0.25
 SWEP.Primary.Automatic      = false

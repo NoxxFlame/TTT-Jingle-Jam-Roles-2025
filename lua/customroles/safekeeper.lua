@@ -1,11 +1,13 @@
 local ents = ents
 local hook = hook
+local math = math
 local player = player
 local surface = surface
 local table = table
 
 local AddHook = hook.Add
 local EntsFindByClass = ents.FindByClass
+local MathRandom = math.random
 local PlayerIterator = player.Iterator
 local TableInsert = table.insert
 
@@ -38,7 +40,8 @@ ROLE.translations = {
         ["sfk_safe_hint_pick"] = "Hold {usekey} to pick open",
         ["sfk_safe_hint_open"] = "Already picked and looted",
         ["safekeeper_picking"] = "PICKING",
-        ["safekeeper_hud"] = "You will drop your safe in: {time}"
+        ["safekeeper_hud_drop"] = "You will drop your safe in: {time}",
+        ["safekeeper_hud_warmup"] = "You will get your safe in: {time}"
     }
 }
 
@@ -55,6 +58,8 @@ if SERVER then
 
     local safekeeper_warn_pick_complete = CreateConVar("ttt_safekeeper_warn_pick_complete", "1", FCVAR_NONE, "Whether to warn an safe's owner is warned when it is picked", 0, 1)
     local safekeeper_pick_grace_time = CreateConVar("ttt_safekeeper_pick_grace_time", 0.25, FCVAR_NONE, "How long (in seconds) before the pick progress of a safe is reset when a player stops looking at it", 0, 1)
+    local safekeeper_warmup_time_min = CreateConVar("ttt_safekeeper_warmup_time_min", "30", FCVAR_NONE, "Minimum time (in seconds) before the Safekeeper will be given their safe", 1, 60)
+    local safekeeper_warmup_time_max = CreateConVar("ttt_safekeeper_warmup_time_max", "60", FCVAR_NONE, "Maximum time (in seconds) before the Safekeeper will be given their safe", 1, 120)
     local safekeeper_drop_time = CreateConVar("ttt_safekeeper_drop_time", "30", FCVAR_NONE, "How long (in seconds) before the Safekeeper will automatically drop their safe", 1, 60)
 
     --------------------
@@ -96,10 +101,34 @@ if SERVER then
     -- ROLE FEATURES --
     -------------------
 
-    -- Drop the safe when the player they hold it for too long
-    AddHook("TTTPlayerAliveThink", "Safekeeper_TTTPlayerAliveThink_DropSafe", function(ply)
+    ROLE.onroleassigned = function(ply)
         if not IsPlayer(ply) then return end
         if not ply:IsSafekeeper() then return end
+
+        local safeTimeMin = safekeeper_warmup_time_min:GetInt()
+        local safeTimeMax = safekeeper_warmup_time_max:GetInt()
+        if safeTimeMax < safeTimeMin then
+            safeTimeMax = safeTimeMin
+        end
+
+        local safeTime = MathRandom(safeTimeMin, safeTimeMax)
+        ply:SetProperty("TTTSafekeeperWarmupTime", CurTime() + safeTime, ply)
+    end
+
+    -- Drop the safe when the player they hold it for too long
+    AddHook("TTTPlayerAliveThink", "Safekeeper_TTTPlayerAliveThink", function(ply)
+        if not IsPlayer(ply) then return end
+        if not ply:IsSafekeeper() then return end
+
+        if ply.TTTSafekeeperWarmupTime then
+            local remaining = ply.TTTSafekeeperWarmupTime - CurTime()
+            if remaining <= 0 then
+                ply:Give("weapon_sfk_safeplacer")
+                ply:ClearProperty("TTTSafekeeperWarmupTime", ply)
+            end
+            return
+        end
+
         if not ply.TTTSafekeeperDropTime then return end
 
         local remaining = ply.TTTSafekeeperDropTime - CurTime()
@@ -155,6 +184,7 @@ if SERVER then
             v:ClearProperty("TTTSafekeeperPickTarget", v)
             v:ClearProperty("TTTSafekeeperPickStart", v)
             v:ClearProperty("TTTSafekeeperDropTime", v)
+            v:ClearProperty("TTTSafekeeperWarmupTime", v)
         end
     end)
 
@@ -257,12 +287,19 @@ if CLIENT then
         surface.SetFont("TabLarge")
         surface.SetTextColor(255, 255, 255, 230)
 
-        if not cli.TTTSafekeeperDropTime then return end
+        local remaining
+        local msgType
+        if cli.TTTSafekeeperWarmupTime then
+            remaining = cli.TTTSafekeeperWarmupTime - CurTime()
+            msgType = "warmup"
+        elseif cli.TTTSafekeeperDropTime then
+            remaining = cli.TTTSafekeeperDropTime - CurTime()
+            msgType = "drop"
+        end
 
-        local remaining = cli.TTTSafekeeperDropTime - CurTime()
-        if remaining <= 0 then return end
+        if not remaining or remaining <= 0 then return end
 
-        local text = LANG.GetParamTranslation("safekeeper_hud", { time = util.SimpleTime(remaining, "%02i:%02i") })
+        local text = LANG.GetParamTranslation("safekeeper_hud_" .. msgType, { time = util.SimpleTime(remaining, "%02i:%02i") })
         local _, h = surface.GetTextSize(text)
 
         -- Move this up based on how many other labels here are
