@@ -4,11 +4,6 @@ end
 
 local table = table
 
--- State
-SAFEKEEPER_SAFE_STATE_IDLE = 0
-SAFEKEEPER_SAFE_STATE_PICKING = 1
-SAFEKEEPER_SAFE_STATE_OPEN = 2
-
 local safekeeper_move_safe = CreateConVar("ttt_safekeeper_move_safe", "1", FCVAR_REPLICATED, "Whether an Safekeeper can move their safe", 0, 1)
 
 if CLIENT then
@@ -47,11 +42,13 @@ ENT.SafeModel = "models/sudisteprops/simple_safe.mdl"
 ENT.CollisionMins = Vector(-15.5, -13.5, -2.5)
 ENT.CollisionMaxs = Vector(13.2, 14, 28.7)
 
+AccessorFuncDT(ENT, "Open", "Open")
 AccessorFuncDT(ENT, "EndTime", "EndTime")
 AccessorFuncDT(ENT, "State", "State")
 AccessorFuncDT(ENT, "Placer", "Placer")
 
 function ENT:SetupDataTables()
+   self:DTVar("Bool", 0, "Open")
    self:DTVar("Int", 0, "EndTime")
    self:DTVar("Int", 1, "State")
    self:DTVar("Entity", 0, "Placer")
@@ -92,9 +89,7 @@ if SERVER then
 
     function ENT:Use(activator)
         if not IsPlayer(activator) or not activator:IsActive() then return end
-
-        local state = self:GetState()
-        if state == SAFEKEEPER_SAFE_STATE_OPEN then return end
+        if self:GetOpen() then return end
 
         local placer = self:GetPlacer()
         if not IsPlayer(placer) then return end
