@@ -128,17 +128,29 @@ function SWEP:PrimaryAttack()
 
     if owner:IsRoleAbilityDisabled() then return end
 
-    local safe = ents.Create("ttt_safekeeper_safe")
     local eyeAngles = owner:EyeAngles()
+    local startPos = owner:GetPos() + eyeAngles:Forward() * 55
+    -- Find a location to drop the safe in front of the player
+	local tr = util.TraceLine({
+		start = startPos,
+		endpos = startPos + eyeAngles:Up() * -10000
+	})
+
+    -- If we didn't find the world, somehow, just throw it from the start position and see what happens
+    local safePos
+    if tr.Hit then
+        safePos = tr.HitPos
+    else
+        safePos = startPos
+    end
+    safePos.z = safePos.z + 5
+
+    local safe = ents.Create("ttt_safekeeper_safe")
     local ang = Angle(0, eyeAngles.y, 0)
     ang:RotateAroundAxis(Vector(0, 0, 1), 90)
 
-    -- Drop the safe in front of the player
-    local offset = owner:GetShootPos() + eyeAngles:Forward() * 55
-    offset.z = owner:GetPos().z + 5
-
     -- Spawn the safe
-    safe:SetPos(offset)
+    safe:SetPos(safePos)
     safe:SetAngles(ang)
     safe:SetPlacer(owner)
     safe:Spawn()
