@@ -47,6 +47,7 @@ ROLE.translations =
 
 local thief_is_innocent = CreateConVar("ttt_thief_is_innocent", "0", FCVAR_REPLICATED, "Whether the Thief should be on the innocent team", 0, 1)
 local thief_is_traitor = CreateConVar("ttt_thief_is_traitor", "0", FCVAR_REPLICATED, "Whether the Thief should be on the traitor team", 0, 1)
+local thief_steal_cost = CreateConVar("ttt_thief_steal_cost", "0", FCVAR_REPLICATED, "Whether stealing a weapon from a player requires a credit. Enables credit looting for innocent and independent Thieves on new round", 0, 1)
 
 -------------------
 -- ROLE FEATURES --
@@ -59,18 +60,45 @@ AddHook("TTTUpdateRoleState", "Thief_TTTUpdateRoleState", function()
     INNOCENT_ROLES[ROLE_THIEF] = is_innocent
     TRAITOR_ROLES[ROLE_THIEF] = is_traitor
     INDEPENDENT_ROLES[ROLE_THIEF] = not is_innocent and not is_traitor
+
+    -- Only let thieves loot credits if they have something that costs credits
+    -- NOTE: If they are on the traitor team, this is ignored so we don't have to even bother checking
+    CAN_LOOT_CREDITS_ROLES[ROLE_THIEF] = thief_steal_cost:GetInt() > 0
 end)
+
+THIEF_STEAL_MODE_PROXIMITY = 0
+THIEF_STEAL_MODE_TOOLS = 1
 
 if SERVER then
     AddCSLuaFile()
 
     util.AddNetworkString("TTT_ThiefItemStolen")
 
+    ------------------
+    -- ROLE CONVARS --
+    ------------------
+
+    local thief_steal_mode = CreateConVar("ttt_thief_steal_mode", "0", FCVAR_NONE, "How stealing a weapon from a player works. 0 - Steal automatically when in proximity. 1 - Steal using they Thieves Tools", 0, 1)
+    CreateConVar("ttt_thief_steal_cooldown", "30", FCVAR_NONE, "How long (in seconds) after the Thief steals something that they can try to steal another thing")
+    CreateConVar("ttt_thief_steal_proximity_time", "15", FCVAR_NONE, "How long (in seconds) it takes the Thief to steal something from a target. Only used when \"ttt_thief_steal_mode 0\" is set")
+    CreateConVar("ttt_thief_steal_proximity_float_time", "3", FCVAR_NONE, "The amount of time (in seconds) it takes for the Thief to lose their target after getting out of range. Only used when \"ttt_thief_steal_mode 0\" is set", 0, 60)
+    CreateConVar("ttt_thief_steal_proximity_require_los", "1", FCVAR_NONE, "Whether the Thief requires line-of-sight to steal something. Only used when \"ttt_thief_steal_mode 0\" is set", 0, 1)
+    CreateConVar("ttt_thief_steal_proximity_distance", "5", FCVAR_NONE, "How close (in meters) the Thief needs to be to their target to start stealing. Only used when \"ttt_thief_steal_mode 0\" is set")
+    --distance = thief_steal_proximity_distance:GetFloat() * UNITS_PER_METER
+
     -------------------
     -- ROLE FEATURES --
     -------------------
 
-    -- TODO: Steal a weapon, somehow, set the property on the weapon so the thief can get it, and send the net method
+    -- TODO: Steal a weapon somehow, set the property on the weapon so the thief can get it, start the cooldown, and send the net method
+
+    AddHook("TTTPlayerAliveThink", "Thief_TTTPlayerAliveThink_Steal", function(ply)
+        if thief_steal_mode:GetInt() ~= THIEF_STEAL_MODE_PROXIMITY then return end
+        if not ply:IsThief() then return end
+        if ply:IsRoleAbilityDisabled() then return end
+
+
+    end)
 
     AddHook("Initialize", "Thief_Initialize", function()
         WIN_THIEF = GenerateNewWinID(ROLE_THIEF)
@@ -103,6 +131,8 @@ if SERVER then
     ----------------
 
     AddHook("TTTCheckForWin", "Thief_TTTCheckForWin", function()
+        if not INDEPENDENT_ROLES[ROLE_THIEF] then return end
+
         local thief_alive = false
         local other_alive = false
         for _, v in PlayerIterator() do
@@ -130,6 +160,13 @@ if SERVER then
 end
 
 if CLIENT then
+    -------------------
+    -- ROLE FEATURES --
+    -------------------
+
+    -- TODO: Show cooldown on the UI
+    -- TODO: Show proximity steal progress on the UI
+
     ----------------
     -- WIN CHECKS --
     ----------------
