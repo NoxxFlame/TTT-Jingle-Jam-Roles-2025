@@ -61,6 +61,8 @@ local clone_perfect_clone = CreateConVar("ttt_clone_perfect_clone", "0", FCVAR_R
 local clone_target_detectives = CreateConVar("ttt_clone_target_detectives", "0", FCVAR_REPLICATED, "Whether the Clone can target detective roles", 0, 1)
 
 if SERVER then
+    AddCSLuaFile()
+
     util.AddNetworkString("TTT_ClonePlayerCloned")
 
     -------------------
