@@ -173,7 +173,6 @@ end
 if SERVER then
     util.AddNetworkString("TTTChefFoodRemoveHooks")
 
-
     -------------------
     -- ROLE FEATURES --
     -------------------
