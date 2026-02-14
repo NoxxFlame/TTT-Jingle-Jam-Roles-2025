@@ -109,10 +109,6 @@ function SWEP:Initialize()
     return self.BaseClass.Initialize(self)
 end
 
-function SWEP:SetupDataTables()
-    self:NetworkVar("Float", 0, "NextIdle")
-end
-
 function SWEP:GetAimTrace(owner)
     local aimStart = owner:EyePos()
     local aimDir = owner:GetAimVector()
