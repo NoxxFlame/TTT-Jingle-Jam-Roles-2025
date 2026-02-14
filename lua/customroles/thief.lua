@@ -93,6 +93,9 @@ ROLE.translations =
 {
     ["english"] =
     {
+        ["thf_tools_help_pri"] = "Use {primaryfire} to attack, like a normal Crowbar",
+        ["thf_tools_help_sec"] = "Use {secondaryfire} to rob a player",
+        ["thf_tools_help_sec_cost"] = "Use {secondaryfire} to rob a player. Costs {credits} credit",
         ["thfsteal_stealing"] = "STEALING FROM {target}",
         ["thfsteal_failed"] = "STEALING FAILED",
         ["thief_credits_hud"] = "Current Credits: {credits}",
