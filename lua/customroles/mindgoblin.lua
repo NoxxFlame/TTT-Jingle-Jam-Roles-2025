@@ -410,32 +410,24 @@ if CLIENT then
         }
 
         local powers = {}
-        local heal_cost = mindgoblin_possess_heal_cost:GetInt()
-        if heal_cost > 0 then
-            TableInsert(powers, {name = L.mindgoblin_possess_heal, key = "down", cost = heal_cost, desc = string.Interp(L.mindgoblin_possess_heal_desc, {target = tgt:Nick()})})
-        end
         local speed_cost = mindgoblin_possess_speed_cost:GetInt()
         if speed_cost > 0 then
             TableInsert(powers, {name = L.mindgoblin_possess_speed, key = "up", cost = speed_cost, desc = string.Interp(L.mindgoblin_possess_speed_desc, {target = tgt:Nick()})})
         end
-        local damage_cost = mindgoblin_possess_damage_cost:GetInt()
-        if damage_cost > 0 then
-            TableInsert(powers, {name = L.mindgoblin_possess_damage, key = "right", cost = damage_cost, desc = string.Interp(L.mindgoblin_possess_damage_desc, {target = tgt:Nick()})})
+        local heal_cost = mindgoblin_possess_heal_cost:GetInt()
+        if heal_cost > 0 then
+            TableInsert(powers, {name = L.mindgoblin_possess_heal, key = "down", cost = heal_cost, desc = string.Interp(L.mindgoblin_possess_heal_desc, {target = tgt:Nick()})})
         end
         local resist_cost = mindgoblin_possess_resist_cost:GetInt()
         if resist_cost > 0 then
             TableInsert(powers, {name = L.mindgoblin_possess_resist, key = "left", cost = resist_cost, desc = string.Interp(L.mindgoblin_possess_resist_desc, {target = tgt:Nick()})})
         end
+        local damage_cost = mindgoblin_possess_damage_cost:GetInt()
+        if damage_cost > 0 then
+            TableInsert(powers, {name = L.mindgoblin_possess_damage, key = "right", cost = damage_cost, desc = string.Interp(L.mindgoblin_possess_damage_desc, {target = tgt:Nick()})})
+        end
 
         if #powers == 0 then return end
-
-        TableSort(powers, function(a, b)
-            if a.cost == b.cost then
-                return a.name < b.name
-            else
-                return a.cost < b.cost
-            end
-        end)
 
         local current_power = cli.TTTMindGoblinPossessingPower or 0
         local max_power = mindgoblin_possess_power_max:GetInt()
