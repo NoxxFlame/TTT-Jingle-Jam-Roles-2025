@@ -289,8 +289,6 @@ if CLIENT then
 
     -- TODO: Test this
     AddHook("TTTScoringSecondaryWins", "MindGoblin_TTTScoringSecondaryWins", function(wintype, secondary_wins)
-        if wintype == WIN_MINDGOBLIN then return end
-
         for _, p in PlayerIterator() do
             if p:Alive() or not p:IsSpec() then continue end
             if not p:IsMindGoblin() then continue end
@@ -326,7 +324,7 @@ if CLIENT then
         local resist_cost = mindgoblin_possess_resist_cost:GetInt()
 
         -- Possessing powers
-        if heal_cost > 0 or speed_cost > 0 or drop_cost > 0 then
+        if heal_cost > 0 or speed_cost > 0 or damage_cost > 0 or resist_cost > 0 then
             html = html .. "<span style='display: block; margin-top: 10px'>While dead, the " .. ROLE_STRINGS[ROLE_MINDGOBLIN] .. " will possess their killer, generating up to <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>" .. max .. " haunting power</span> over time. This haunting power can be used on the following actions:</span>"
 
             html = html .. "<ul style='margin-top: 0'>"
