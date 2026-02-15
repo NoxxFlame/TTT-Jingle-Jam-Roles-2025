@@ -22,7 +22,7 @@ player and become their perfect clone.
 
 You will win with their team, but be
 careful... if they die, so will you!]]
-ROLE.shortdesc = "Chooses a player to become a clone of and then wins with that player's team"
+ROLE.shortdesc = "Chooses a player to become a clone of and then wins with that player's team."
 
 ROLE.team = ROLE_TEAM_JESTER
 
