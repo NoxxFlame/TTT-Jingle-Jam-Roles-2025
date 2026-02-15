@@ -47,25 +47,48 @@ ROLE.translations = {
 
 local mindgoblin_possess_power_max = CreateConVar("ttt_mindgoblin_killer_possess_power_max", "100", FCVAR_REPLICATED, "The maximum amount of power a Mind Goblin can have when possessing their killer", 1, 200)
 
-local mindgoblin_possess_heal_cost = CreateConVar("ttt_mindgoblin_possess_heal_cost", "75", FCVAR_REPLICATED, "The amount of power to spend when a Mind Goblin is healing their killer via a possession. Set to 0 to disable", 0, 100)
-local mindgoblin_possess_heal_amount = CreateConVar("ttt_mindgoblin_possess_heal_amount", "10", FCVAR_REPLICATED, "The amount of health to heal the target when a Mind Goblin uses the heal power", 1, 100)
+local mindgoblin_possess_heal_cost = CreateConVar("ttt_mindgoblin_possess_heal_cost", "50", FCVAR_REPLICATED, "The amount of power to spend when a Mind Goblin is healing their killer via a possession. Set to 0 to disable", 0, 100)
+local mindgoblin_possess_heal_amount = CreateConVar("ttt_mindgoblin_possess_heal_amount", "25", FCVAR_REPLICATED, "The amount of health to heal the target for over time when a Mind Goblin uses the heal power", 1, 100)
 
 local mindgoblin_possess_speed_cost = CreateConVar("ttt_mindgoblin_possess_speed_cost", "25", FCVAR_REPLICATED, "The amount of power to spend when a Mind Goblin is speeding up their killer attack via a possession. Set to 0 to disable", 0, 100)
 local mindgoblin_possess_speed_factor = CreateConVar("ttt_mindgoblin_possess_speed_factor", "0.5", FCVAR_REPLICATED, "The speed boost to give the target (e.g. 0.5 = 50% faster movement)", 0.1, 1)
 local mindgoblin_possess_speed_length = CreateConVar("ttt_mindgoblin_possess_speed_length", "10", FCVAR_REPLICATED, "How long (in seconds) the target's speed boost lasts", 1, 60)
 
-local mindgoblin_possess_damage_cost = CreateConVar("ttt_mindgoblin_possess_damage_cost", "50", FCVAR_REPLICATED, "The amount of power to spend when a Mind Goblin is increasing the damage of their killer via a possession. Set to 0 to disable", 0, 100)
+local mindgoblin_possess_damage_cost = CreateConVar("ttt_mindgoblin_possess_damage_cost", "75", FCVAR_REPLICATED, "The amount of power to spend when a Mind Goblin is increasing the damage of their killer via a possession. Set to 0 to disable", 0, 100)
 local mindgoblin_possess_damage_factor = CreateConVar("ttt_mindgoblin_possess_damage_factor", "0.25", FCVAR_REPLICATED, "The damage bonus that the target has against other players (e.g. 0.25 = 25% extra damage)", 0.05, 1)
 local mindgoblin_possess_damage_length = CreateConVar("ttt_mindgoblin_possess_damage_length", "10", FCVAR_REPLICATED, "How long (in seconds) the target's damage boost lasts", 1, 60)
 
-local mindgoblin_possess_resist_cost = CreateConVar("ttt_mindgoblin_possess_resist_cost", "50", FCVAR_REPLICATED, "The amount of power to spend when a Mind Goblin is giving their killer damage resist via a possession. Set to 0 to disable", 0, 100)
+local mindgoblin_possess_resist_cost = CreateConVar("ttt_mindgoblin_possess_resist_cost", "75", FCVAR_REPLICATED, "The amount of power to spend when a Mind Goblin is giving their killer damage resist via a possession. Set to 0 to disable", 0, 100)
 local mindgoblin_possess_resist_factor = CreateConVar("ttt_mindgoblin_possess_resist_factor", "0.25", FCVAR_REPLICATED, "The damage resist that the target has against other players (e.g. 0.25 = 25% less damage)", 0.05, 1)
 local mindgoblin_possess_resist_length = CreateConVar("ttt_mindgoblin_possess_resist_length", "10", FCVAR_REPLICATED, "How long (in seconds) the target's damage resist lasts", 1, 60)
+
+-------------------
+-- ROLE FEATURES --
+-------------------
+
+local speedPlayers = {}
+-- TODO: Test this
+AddHook("TTTSpeedMultiplier", "MindGoblin_TTTSpeedMultiplier", function(ply, mults)
+    if not ply:Alive() or ply:IsSpec() then return end
+    local sid = ply:SteamID64()
+    local speedFactor
+    if speedPlayers[sid] and speedPlayers[sid] > 0 then
+        speedFactor = 1 + (mindgoblin_possess_speed_factor:GetFloat() * speedPlayers[sid])
+    end
+
+    if speedFactor then
+        TableInsert(mults, speedFactor)
+    end
+end)
 
 if SERVER then
     AddCSLuaFile()
 
     util.AddNetworkString("TTT_MindGoblinPossess")
+    util.AddNetworkString("TTT_MindGoblinSpeedStart")
+    util.AddNetworkString("TTT_MindGoblinSpeedEnd")
+    util.AddNetworkString("TTT_MindGoblinHealStart")
+    util.AddNetworkString("TTT_MindGoblinHealEnd")
 
     ------------------
     -- ROLE CONVARS --
@@ -133,6 +156,9 @@ if SERVER then
         net.Broadcast()
     end)
 
+    local timerIds = {}
+    local damagePlayers = {}
+    local resistPlayers = {}
     AddHook("KeyPress", "MindGoblin_KeyPress", function(ply, key)
         if not IsPlayer(ply) then return end
         if not ply:IsMindGoblin() then return end
@@ -150,21 +176,101 @@ if SERVER then
 
         local spent
         local verb
+        local plySid64 = ply:SteamID64()
+        local targetSid64 = target:SteamID64()
         local goblinSubject = "your target, " .. target:Nick()
         local targetSubject = "you"
-        -- TODO: Do the things
         if key == IN_BACK and power >= heal_cost then
+            local timerId = "MindGoblinHealBuff_" .. plySid64 .. "_" .. targetSid64
+            if timer.Exists(timerId) then return end
+
+            net.Start("TTT_MindGoblinHealStart")
+                net.WriteString(targetSid64)
+            net.Send(target)
+
+            local heal_amount = mindgoblin_possess_heal_amount:GetInt()
+
+            timerIds[timerId] = true
+            -- Test this
+            timer.Create(timerId, 1, heal_amount, function()
+                if target:Alive() and not target:IsSpec() then
+                    local hp = target:Health()
+                    if hp < target:GetMaxHealth() then
+                        target:SetHealth(hp + 1)
+                    end
+                end
+            end)
+
+            timerIds[timerId .. "_Smoke"] = true
+            timer.Create(timerId .. "_Smoke", heal_amount, 1, function()
+                timer.Remove(timerId)
+                timer.Remove(timerId .. "_Smoke")
+                net.Start("TTT_MindGoblinHealEnd")
+                    net.WriteString(targetSid64)
+                net.Send(target)
+            end)
+
             spent = heal_cost
             verb = "healed"
         elseif key == IN_FORWARD and power >= speed_cost then
+            local timerId = "MindGoblinSpeedBuff_" .. plySid64 .. "_" .. targetSid64
+            if timer.Exists(timerId) then return end
+
+            if not speedPlayers[targetSid64] then
+                speedPlayers[targetSid64] = 0
+            end
+            speedPlayers[targetSid64] = speedPlayers[targetSid64] + 1
+
+            timerIds[timerId] = true
+            timer.Create(timerId, mindgoblin_possess_speed_length:GetInt(), 1, function()
+                timer.Remove(timerId)
+                net.Start("TTT_MindGoblinSpeedEnd")
+                    net.WriteString(targetSid64)
+                net.Send(target)
+
+                speedPlayers[targetSid64] = speedPlayers[targetSid64] - 1
+            end)
+
+            net.Start("TTT_MindGoblinSpeedStart")
+                net.WriteString(targetSid64)
+            net.Send(target)
+
             spent = speed_cost
             verb = "hastened"
         elseif key == IN_RIGHT and power >= damage_cost then
+            local timerId = "MindGoblinDamageBuff_" .. plySid64 .. "_" .. targetSid64
+            if timer.Exists(timerId) then return end
+
+            if not damagePlayers[targetSid64] then
+                damagePlayers[targetSid64] = 0
+            end
+            damagePlayers[targetSid64] = damagePlayers[targetSid64] + 1
+
+            timerIds[timerId] = true
+            timer.Create(timerId, mindgoblin_possess_damage_length:GetInt(), 1, function()
+                timer.Remove(timerId)
+                damagePlayers[targetSid64] = damagePlayers[targetSid64] - 1
+            end)
+
             spent = damage_cost
             verb = "buffed"
             goblinSubject = goblinSubject .. "'s damage"
             targetSubject = targetSubject .. "r damage"
         elseif key == IN_LEFT and power >= resist_cost then
+            local timerId = "MindGoblinResistBuff_" .. plySid64 .. "_" .. targetSid64
+            if timer.Exists(timerId) then return end
+
+            if not resistPlayers[targetSid64] then
+                resistPlayers[targetSid64] = 0
+            end
+            resistPlayers[targetSid64] = resistPlayers[targetSid64] + 1
+
+            timerIds[timerId] = true
+            timer.Create(timerId, mindgoblin_possess_resist_length:GetInt(), 1, function()
+                timer.Remove(timerId)
+                resistPlayers[targetSid64] = resistPlayers[targetSid64] - 1
+            end)
+
             spent = resist_cost
             verb = "buffed"
             goblinSubject = goblinSubject .. "'s damage resistance"
@@ -176,6 +282,27 @@ if SERVER then
         ply:QueueMessage(MSG_PRINTBOTH, "You have " .. verb .. " " .. goblinSubject)
         target:QueueMessage(MSG_PRINTBOTH, ROLE_STRINGS_EXT[ROLE_MINDGOBLIN] .. " has " .. verb .. " " .. targetSubject .. "!")
         ply:SetProperty("TTTMindGoblinPossessingPower", power - spent, ply)
+    end)
+
+    -- TODO: Test this
+    AddHook("ScalePlayerDamage", "MindGoblin_ScalePlayerDamage", function(ply, hitgroup, dmginfo)
+        local att = dmginfo:GetAttacker()
+        -- If the attacker is buffed, scale their damage up
+        if IsPlayer(att) and att:Alive() and not att:IsSpec() then
+            local attSid64 = att:SteamID64()
+            if damagePlayers[attSid64] and damagePlayers[attSid64] > 0 then
+                dmginfo:ScaleDamage(1 + mindgoblin_possess_damage_factor:GetFloat())
+            end
+        end
+
+        if not IsPlayer(ply) then return end
+        if not ply:Alive() or ply:IsSpec() then return end
+
+        -- If the victim has resistance, scale their damage up
+        local plySid64 = ply:SteamID64()
+        if resistPlayers[plySid64] and resistPlayers[plySid64] > 0 then
+            dmginfo:ScaleDamage(1 - mindgoblin_possess_resist_factor:GetFloat())
+        end
     end)
 
     ------------
@@ -198,6 +325,14 @@ if SERVER then
             timer.Remove("MindGoblinPossessingPower_" .. v:SteamID64())
             timer.Remove("MindGoblinPossessingSpectate_" .. v:SteamID64())
         end
+
+        for timerId, _ in pairs(timerIds) do
+            timer.Remove(timerId)
+        end
+        timerIds = {}
+        speedPlayers = {}
+        damagePlayers = {}
+        resistPlayers = {}
     end)
 end
 
@@ -205,6 +340,59 @@ if CLIENT then
     ROLE.shouldshowspectatorhud = function(ply)
         return ply.TTTMindGoblinPossessing
     end
+
+    -------------------
+    -- ROLE FEATURES --
+    -------------------
+
+    local healPlayers = {}
+    net.Receive("TTT_MindGoblinHealStart", function()
+        local cli = LocalPlayer()
+        if not IsPlayer(cli) then return end
+
+        local sid64 = net.ReadString()
+        if not healPlayers[sid64] then
+            healPlayers[sid64] = 0
+        end
+        healPlayers[sid64] = healPlayers[sid64] + 1
+    end)
+
+    net.Receive("TTT_MindGoblinHealEnd", function()
+        local cli = LocalPlayer()
+        if not IsPlayer(cli) then return end
+
+        local sid64 = net.ReadString()
+        if not healPlayers[sid64] then return end
+    end)
+
+    -- TODO: Test this
+    AddHook("TTTShouldPlayerSmoke", "MindGoblin_TTTShouldPlayerSmoke", function(ply, cli, shouldSmoke, smokeParticle, smokeOffset)
+        local sid64 = cli:SteamID64()
+        if healPlayers[sid64] and healPlayers[sid64] > 0 then
+            return true, COLOR_GREEN
+        end
+    end)
+
+    net.Receive("TTT_MindGoblinSpeedStart", function()
+        local cli = LocalPlayer()
+        if not IsPlayer(cli) then return end
+        if not cli:Alive() or cli:IsSpec() then return end
+
+        local sid64 = net.ReadString()
+        if not speedPlayers[sid64] then
+            speedPlayers[targetSsid64id64] = 0
+        end
+        speedPlayers[sid64] = speedPlayers[sid64] + 1
+    end)
+
+    net.Receive("TTT_MindGoblinSpeedEnd", function()
+        local cli = LocalPlayer()
+        if not IsPlayer(cli) then return end
+
+        local sid64 = net.ReadString()
+        if not speedPlayers[sid64] then return end
+        speedPlayers[sid64] = speedPlayers[sid64] - 1
+    end)
 
     ---------
     -- HUD --
@@ -287,7 +475,6 @@ if CLIENT then
     -- WIN CHECKS --
     ----------------
 
-    -- TODO: Test this
     AddHook("TTTScoringSecondaryWins", "MindGoblin_TTTScoringSecondaryWins", function(wintype, secondary_wins)
         for _, p in PlayerIterator() do
             if p:Alive() or not p:IsSpec() then continue end
@@ -303,6 +490,14 @@ if CLIENT then
             TableInsert(secondary_wins, ROLE_MINDGOBLIN)
             return
         end
+    end)
+
+    -------------
+    -- CLEANUP --
+    -------------
+
+    AddHook("TTTPrepareRound", "MindGoblin_TTTPrepareRound", function()
+        speedPlayers = {}
     end)
 
     --------------
