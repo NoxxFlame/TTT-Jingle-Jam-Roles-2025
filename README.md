@@ -33,6 +33,23 @@ ttt_chef_burnt_interval   1   // How often the burnt food eater's health should 
 ttt_chef_burnt_amount     1   // The amount of the burnt food eater's health to remove per interval
 ```
 
+## ![Role Icon](/gamemodes/terrortown/content/materials/vgui/ttt/roles/cln/tab_cln.png) Clone
+_Suggested By_: BoboMcGraw\
+The Clone is a Jester role that chooses a player to become a clone of and then wins with that player's team.
+\
+\
+**ConVars**
+```cpp
+ttt_clone_enabled           0   // Whether or not a Clone should spawn
+ttt_clone_spawn_weight      1   // The weight assigned to spawning a Clone
+ttt_clone_min_players       0   // The minimum number of players required to spawn a Clone
+ttt_clone_starting_health   100 // The amount of health a Clone starts with
+ttt_clone_max_health        100 // The maximum amount of health a Clone can have
+ttt_clone_perfect_clone     0   // Whether the Clone copies their target's model perfectly. If "false", some aspect of the clone will be wrong (such as skin, bodygroup, size, etc.)
+ttt_clone_target_detectives 0   // Whether the Clone can target detective roles
+ttt_clone_minimum_radius    5   // The minimum radius of the Clone's device in meters. Set to 0 to disable
+```
+
 ## ![Role Icon](/gamemodes/terrortown/content/materials/vgui/ttt/roles/pin/tab_pin.png) Piñata
 _Suggested By_: detection.exe\
 The Piñata is an Independent role that drops shop weapons on an interval based on how much damage they take. They also cannot damage another player unless they are damaged by them first.
@@ -72,6 +89,39 @@ ttt_randoswapper_healthstation_reduce_max 1   // Whether the Randoswapper's max 
 ttt_randoswapper_swap_lovers              1   // Whether the Randoswapper should swap lovers with their attacker or not
 ttt_randoswapper_max_swaps                5   // The maximum number of times the Randoswapper can swap before they become a regular Swapper. Set to "0" to allow swapping forever
 ```
+
+## ![Role Icon](/gamemodes/terrortown/content/materials/vgui/ttt/roles/sfk/tab_sfk.png) Safekeeper
+_Suggested By_: Corvatile\
+The Sibling is a Independent role that places a safe somewhere on the map that they must defend. If the safe is placed and unopened when the round ends, they win!
+\
+\
+**ConVars**
+```cpp
+ttt_safekeeper_enabled            0    // Whether or not a Safekeeper should spawn
+ttt_safekeeper_spawn_weight       1    // The weight assigned to spawning a Safekeeper
+ttt_safekeeper_min_players        0    // The minimum number of players required to spawn a Safekeeper
+ttt_safekeeper_starting_health    100  // The amount of health a Safekeeper starts with
+ttt_safekeeper_max_health         100  // The maximum amount of health a Safekeeper can have
+ttt_safekeeper_warmup_time_min    30   // Minimum time (in seconds) before the Safekeeper will be given their safe
+ttt_safekeeper_warmup_time_max    60   // Maximum time (in seconds) before the Safekeeper will be given their safe
+ttt_safekeeper_drop_time          15   // How long (in seconds) before the Safekeeper will automatically drop their safe
+ttt_safekeeper_pick_grace_time    0.25 // How long (in seconds) before the pick progress of a safe is reset when a player stops looking at it
+ttt_safekeeper_pick_time          15   // How long (in seconds) it takes to pick a safe
+ttt_safekeeper_warn_pick_start    1    // Whether to warn a safe's owner when someone starts picking it
+ttt_safekeeper_warn_pick_complete 1    // Whether to warn a safe's owner when it is picked
+ttt_safekeeper_move_safe          1    // Whether an Safekeeper can move their safe
+ttt_safekeeper_move_cooldown      30   // How long a Safekeeper must wait after placing their safe before they can move it again
+ttt_safekeeper_weapons_dropped    4    // How many weapons the Safekeeper's safe drops when it is picked open
+```
+
+**Hooks**
+#### TTTSafekeeperSafePicked(placer, opener, safe)
+Called when a Safekeeper's safe is picked open\
+*Realm:* Server\
+*Parameters:*
+- *placer* - The Safekeeper who placed the safe
+- *opener* - The player who opened the safe
+- *safe* - The safe that was picked open
 
 ## ![Role Icon](/gamemodes/terrortown/content/materials/vgui/ttt/roles/sib/tab_sib.png) Sibling
 _Suggested By_: u/Vitaproficiscar\
@@ -124,3 +174,13 @@ ttt_thief_steal_proximity_time        15  // How long (in seconds) it takes the 
 
 # Special Thanks
 - [Game icons](https://game-icons.net/) for the role icons
+<<<<<<< safekeeper
+- [avhatar](https://sketchfab.com/avhatar) for the [original model](https://sketchfab.com/3d-models/simple-safe-2e308cb3fe1d4676beb43e75fdd27e8e) for the Safekeeper
+  - Licensed as [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
+- [Famoso](https://steamcommunity.com/profiles/76561198308951372) for the GMod version of the [safe model](https://steamcommunity.com/sharedfiles/filedetails/?id=3030515670) for the Safekeeper
+- [GFXSounds.com](https://gfxsounds.com) for the picking and opening sounds used for the Safekeeper's safe
+  - [Safe lock, vault, opening mechanism 6](https://gfxsounds.com/sound-effect/safe-lock-vault-opening-mechanism-6/)
+  - [Safe vault, dial lock, turning click 6](https://gfxsounds.com/sound-effect/safe-vault-dial-lock-turning-click-6/)
+=======
+- [The Stig](https://steamcommunity.com/id/The-Stig-294) for the code used to shrink imperfect clones
+>>>>>>> main
