@@ -33,6 +33,23 @@ ttt_chef_burnt_interval   1   // How often the burnt food eater's health should 
 ttt_chef_burnt_amount     1   // The amount of the burnt food eater's health to remove per interval
 ```
 
+## ![Role Icon](/gamemodes/terrortown/content/materials/vgui/ttt/roles/cln/tab_cln.png) Clone
+_Suggested By_: BoboMcGraw\
+The Clone is a Jester role that chooses a player to become a clone of and then wins with that player's team.
+\
+\
+**ConVars**
+```cpp
+ttt_clone_enabled           0   // Whether or not a Clone should spawn
+ttt_clone_spawn_weight      1   // The weight assigned to spawning a Clone
+ttt_clone_min_players       0   // The minimum number of players required to spawn a Clone
+ttt_clone_starting_health   100 // The amount of health a Clone starts with
+ttt_clone_max_health        100 // The maximum amount of health a Clone can have
+ttt_clone_perfect_clone     0   // Whether the Clone copies their target's model perfectly. If "false", some aspect of the clone will be wrong (such as skin, bodygroup, size, etc.)
+ttt_clone_target_detectives 0   // Whether the Clone can target detective roles
+ttt_clone_minimum_radius    5   // The minimum radius of the Clone's device in meters. Set to 0 to disable
+```
+
 ## ![Role Icon](/gamemodes/terrortown/content/materials/vgui/ttt/roles/mgb/tab_mgb.png) Mind Goblin
 _Suggested By_: BoboMcGraw\
 The Mind Goblin is a Jester role that possesses their killer, but wants to help them win. They can buff their killer and if their killer wins, so does the Mind Goblin.
@@ -104,6 +121,39 @@ ttt_randoswapper_swap_lovers              1   // Whether the Randoswapper should
 ttt_randoswapper_max_swaps                5   // The maximum number of times the Randoswapper can swap before they become a regular Swapper. Set to "0" to allow swapping forever
 ```
 
+## ![Role Icon](/gamemodes/terrortown/content/materials/vgui/ttt/roles/sfk/tab_sfk.png) Safekeeper
+_Suggested By_: Corvatile\
+The Sibling is a Independent role that places a safe somewhere on the map that they must defend. If the safe is placed and unopened when the round ends, they win!
+\
+\
+**ConVars**
+```cpp
+ttt_safekeeper_enabled            0    // Whether or not a Safekeeper should spawn
+ttt_safekeeper_spawn_weight       1    // The weight assigned to spawning a Safekeeper
+ttt_safekeeper_min_players        0    // The minimum number of players required to spawn a Safekeeper
+ttt_safekeeper_starting_health    100  // The amount of health a Safekeeper starts with
+ttt_safekeeper_max_health         100  // The maximum amount of health a Safekeeper can have
+ttt_safekeeper_warmup_time_min    30   // Minimum time (in seconds) before the Safekeeper will be given their safe
+ttt_safekeeper_warmup_time_max    60   // Maximum time (in seconds) before the Safekeeper will be given their safe
+ttt_safekeeper_drop_time          15   // How long (in seconds) before the Safekeeper will automatically drop their safe
+ttt_safekeeper_pick_grace_time    0.25 // How long (in seconds) before the pick progress of a safe is reset when a player stops looking at it
+ttt_safekeeper_pick_time          15   // How long (in seconds) it takes to pick a safe
+ttt_safekeeper_warn_pick_start    1    // Whether to warn a safe's owner when someone starts picking it
+ttt_safekeeper_warn_pick_complete 1    // Whether to warn a safe's owner when it is picked
+ttt_safekeeper_move_safe          1    // Whether an Safekeeper can move their safe
+ttt_safekeeper_move_cooldown      30   // How long a Safekeeper must wait after placing their safe before they can move it again
+ttt_safekeeper_weapons_dropped    4    // How many weapons the Safekeeper's safe drops when it is picked open
+```
+
+**Hooks**
+#### TTTSafekeeperSafePicked(placer, opener, safe)
+Called when a Safekeeper's safe is picked open\
+*Realm:* Server\
+*Parameters:*
+- *placer* - The Safekeeper who placed the safe
+- *opener* - The player who opened the safe
+- *safe* - The safe that was picked open
+
 ## ![Role Icon](/gamemodes/terrortown/content/materials/vgui/ttt/roles/sib/tab_sib.png) Sibling
 _Suggested By_: u/Vitaproficiscar\
 The Sibling is a Special Innocent role that is assigned a shop-having target. When their target buys something from the shop, the Sibling gets a copy (and sometimes steals the item entirely).
@@ -126,5 +176,39 @@ ttt_sibling_target_jesters      1   // Whether the sibling's target can be a jes
 ttt_sibling_target_traitors     1   // Whether the sibling's target can be a traitor role
 ```
 
+## ![Role Icon](/gamemodes/terrortown/content/materials/vgui/ttt/roles/thf/tab_thf.png) Thief
+_Suggested By_: Goatylicious\
+The Sibling is an Independent role (that can be made into a Special Innocent or Special Traitor) that can only get weapons by stealing from other players.
+\
+\
+**ConVars**
+```cpp
+ttt_thief_enabled                     0   // Whether or not a Thief should spawn
+ttt_thief_spawn_weight                1   // The weight assigned to spawning a Thief
+ttt_thief_min_players                 0   // The minimum number of players required to spawn a Thief
+ttt_thief_starting_health             100 // The amount of health a Thief starts with
+ttt_thief_max_health                  100 // The maximum amount of health a Thief can have
+ttt_thief_respawn_health              100 // What amount of health to give the Thief when they are killed and respawned
+ttt_thief_is_innocent                 0   // Whether the Thief should be on the innocent team
+ttt_thief_is_traitor                  0   // Whether the Thief should be on the traitor team
+ttt_thief_steal_cost                  0   // Whether stealing a weapon from a player requires a credit. Enables credit looting for innocent and independent Thieves on new round
+ttt_thief_steal_failure_cooldown      3   // How long (in seconds) after the Thief loses their target before they can try to steal another thing
+ttt_thief_steal_success_cooldown      30  // How long (in seconds) after the Thief steals something before they can try to steal another thing
+ttt_thief_steal_mode                  0   // How stealing a weapon from a player works. 0 - Steal automatically when in proximity. 1 - Steal using their Thieves' Tools
+ttt_thief_steal_notify_delay_min      10  // The minimum delay before a player is notified they've been robbed. Set to "0" to disable notifications
+ttt_thief_steal_notify_delay_max      30  // The maximum delay before a player is notified they've been robbed
+ttt_thief_steal_proximity_distance    5   // How close (in meters) the Thief needs to be to their target to start stealing. Only used when "ttt_thief_steal_mode 0" is set
+ttt_thief_steal_proximity_float_time  3   // The amount of time (in seconds) it takes for the Thief to lose their target after getting out of range. Only used when "ttt_thief_steal_mode 0" is set
+ttt_thief_steal_proximity_require_los 1   // Whether the Thief requires line-of-sight to steal something. Only used when "ttt_thief_steal_mode 0" is set
+ttt_thief_steal_proximity_time        15  // How long (in seconds) it takes the Thief to steal something from a target. Only used when "ttt_thief_steal_mode 0" is set
+```
+
 # Special Thanks
 - [Game icons](https://game-icons.net/) for the role icons
+- [The Stig](https://steamcommunity.com/id/The-Stig-294) for the code used to shrink imperfect clones
+- [avhatar](https://sketchfab.com/avhatar) for the [original model](https://sketchfab.com/3d-models/simple-safe-2e308cb3fe1d4676beb43e75fdd27e8e) for the Safekeeper
+  - Licensed as [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
+- [Famoso](https://steamcommunity.com/profiles/76561198308951372) for the GMod version of the [safe model](https://steamcommunity.com/sharedfiles/filedetails/?id=3030515670) for the Safekeeper
+- [GFXSounds.com](https://gfxsounds.com) for the picking and opening sounds used for the Safekeeper's safe
+  - [Safe lock, vault, opening mechanism 6](https://gfxsounds.com/sound-effect/safe-lock-vault-opening-mechanism-6/)
+  - [Safe vault, dial lock, turning click 6](https://gfxsounds.com/sound-effect/safe-vault-dial-lock-turning-click-6/)
