@@ -5,7 +5,7 @@ A pack of [Custom Roles for TTT](https://github.com/Custom-Roles-for-TTT/TTT-Cus
 
 ## ![Role Icon](/gamemodes/terrortown/content/materials/vgui/ttt/roles/adl/tab_adl.png) Arms Dealer
 _Suggested By_: matt.who\
-The Chef is an Independent that makes arms deals sneakily while trying to survive the chaos they cause.
+The Arms Dealer is an Independent that makes arms deals sneakily while trying to survive the chaos they cause.
 \
 \
 **ConVars**
