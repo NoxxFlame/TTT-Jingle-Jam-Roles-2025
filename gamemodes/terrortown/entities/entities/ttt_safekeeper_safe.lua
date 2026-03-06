@@ -6,12 +6,14 @@ local ents = ents
 local hook = hook
 local ipairs = ipairs
 local math = math
+local string = string
 local table = table
 local timer = timer
 
 local CreateEntity = ents.Create
 local MathRandom = math.random
 local MathRand = math.Rand
+local TableHasValue = table.HasValue
 local TableInsert = table.insert
 local TableRemove = table.remove
 
@@ -53,6 +55,8 @@ if CLIENT then
         }
     end
     ENT.AutomaticFrameAdvance = true
+else
+    ENT.BlockList = {}
 end
 
 ENT.Type = "anim"
@@ -79,6 +83,11 @@ function ENT:Initialize()
     self:SetCollisionGroup(COLLISION_GROUP_INTERACTIVE)
 
     if SERVER then
+        self.BlockList = {}
+        for blocked_id in string.gmatch(GetConVar("ttt_safekeeper_weapons_blocklist"):GetString(), "([^,]+)") do
+            TableInsert(self.BlockList, blocked_id:Trim())
+        end
+
         self:SetUseType(CONTINUOUS_USE)
 
         local phys = self:GetPhysicsObject()
@@ -91,9 +100,10 @@ function ENT:Initialize()
 end
 
 if SERVER then
-    local safekeeper_weapons_dropped = CreateConVar("ttt_safekeeper_weapons_dropped", "4", FCVAR_NONE, "How many weapons the Safekeeper's safe drops when it is picked open", 0, 10)
+    local safekeeper_weapons_dropped = CreateConVar("ttt_safekeeper_weapons_dropped", "4", FCVAR_NONE, "How many weapons the Safekeeper's safe drops when it is picked open", 0, 20)
     local safekeeper_warn_pick_start = CreateConVar("ttt_safekeeper_warn_pick_start", "1", FCVAR_NONE, "Whether to warn a safe's owner when someone starts picking it", 0, 1)
     local safekeeper_warn_pick_complete = CreateConVar("ttt_safekeeper_warn_pick_complete", "1", FCVAR_NONE, "Whether to warn a safe's owner when it is picked", 0, 1)
+    CreateConVar("ttt_safekeeper_weapons_blocklist", "", FCVAR_NONE, "The comma-separated list of weapon IDs to not give out")
 
     function ENT:Use(activator)
         if self:GetOpen() then return end
@@ -176,9 +186,17 @@ if SERVER then
 
             if #lootTable == 0 then -- Rebuild the loot table if we run out
                 for _, v in ipairs(weapons.GetList()) do
-                    if v and not v.AutoSpawnable and v.CanBuy and #v.CanBuy > 0 and v.AllowDrop then
-                        TableInsert(lootTable, WEPS.GetClass(v))
-                    end
+                    if not v then continue end
+
+                    -- Only allow weapons that can be bought, can be dropped, and don't spawn on their own
+                    if v.AutoSpawnable or not v.AllowDrop then continue end
+                    if not v.CanBuy or #v.CanBuy == 0 then continue end
+
+                    -- Also make sure the weapon isn't in the blocklist
+                    local wepClass = WEPS.GetClass(v)
+                    if TableHasValue(self.BlockList, wepClass) then continue end
+
+                    TableInsert(lootTable, wepClass)
                 end
             end
 

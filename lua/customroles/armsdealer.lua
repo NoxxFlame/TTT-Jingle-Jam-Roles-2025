@@ -12,6 +12,7 @@ local AddHook = hook.Add
 local MathRandom = math.random
 local PlayerIterator = player.Iterator
 local StringUpper = string.upper
+local TableHasValue = table.HasValue
 local TableInsert = table.insert
 
 local ROLE = {}
@@ -107,6 +108,10 @@ ROLE.convars =
         cvar = "ttt_armsdealer_deal_distance",
         type = ROLE_CONVAR_TYPE_NUM,
         decimal = 0
+    },
+    {
+        cvar = "ttt_armsdealer_blocklist",
+        type = ROLE_CONVAR_TYPE_TEXT
     }
 }
 
@@ -152,6 +157,8 @@ if SERVER then
     if not plymeta then return end
 
     AddCSLuaFile()
+
+    local armsdealer_blocklist = CreateConVar("ttt_armsdealer_blocklist", "", FCVAR_NONE, "The comma-separated list of weapon IDs to not give out")
 
     util.AddNetworkString("TTT_ArmsDealerItemDealt")
 
@@ -214,6 +221,7 @@ if SERVER then
         end
     end)
 
+    local blocklist = {}
     AddHook("TTTPlayerAliveThink", "ArmsDealer_TTTPlayerAliveThink_Deal", function(ply)
         if GetRoundState() ~= ROUND_ACTIVE then return end
         if not ply:IsArmsDealer() then return end
@@ -332,10 +340,13 @@ if SERVER then
                     if v.AutoSpawnable or not v.AllowDrop then continue end
                     if not v.CanBuy or #v.CanBuy == 0 then continue end
 
-                    -- Also make sure the target can use this weapon
+                    -- Make sure the target can use this weapon
                     local wepClass = WEPS.GetClass(v)
                     if target:HasWeapon(wepClass) then continue end
                     if not target:CanCarryType(v.Kind) then continue end
+
+                    -- Also make sure the weapon isn't in the blocklist
+                    if TableHasValue(blocklist, wepClass) then continue end
 
                     TableInsert(items, wepClass)
                 end
@@ -400,6 +411,13 @@ if SERVER then
                     timer.Create("TTTArmsDealerNotifyDelay_" .. target:SteamID64(), delay, 1, DoNotify)
                 end
             end
+        end
+    end)
+
+    AddHook("TTTBeginRound", "ArmsDealer_TTTBeginRound", function()
+        blocklist = {}
+        for blocked_id in string.gmatch(armsdealer_blocklist:GetString(), "([^,]+)") do
+            TableInsert(blocklist, blocked_id:Trim())
         end
     end)
 

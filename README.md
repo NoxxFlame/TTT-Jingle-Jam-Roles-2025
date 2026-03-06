@@ -31,6 +31,7 @@ ttt_armsdealer_target_innocents      0   // Whether the Arms Dealer's target can
 ttt_armsdealer_target_jesters        0   // Whether the Arms Dealer's target can be a jester role
 ttt_armsdealer_target_monsters       1   // Whether the Arms Dealer's target can be a monster role
 ttt_armsdealer_target_traitors       1   // Whether the Arms Dealer's target can be a traitor role
+ttt_armsdealer_blocklist             ""  // The comma-separated list of weapon IDs to not give out. For example: "ttt_m9k_harpoon,weapon_ttt_slam"
 ```
 
 ## ![Role Icon](/gamemodes/terrortown/content/materials/vgui/ttt/roles/chf/tab_chf.png) Chef
@@ -136,6 +137,7 @@ ttt_pinata_starting_health   150 // The amount of health a Piñata starts with
 ttt_pinata_max_health        150 // The maximum amount of health a Piñata can have
 ttt_pinata_damage_interval   20  // How much damage the Piñata must take between weapon drops
 ttt_pinata_announce          1   // Whether to announce to everyone that there is a Piñata in the round
+ttt_pinata_blocklist         ""  // The comma-separated list of weapon IDs to not give out. For example: "ttt_m9k_harpoon,weapon_ttt_slam"
 ttt_pinata_can_see_jesters   0   // Whether jesters are revealed (via head icons, color/icon on the scoreboard, etc.) to Piñatas
 ttt_pinata_update_scoreboard 0   // Whether Piñatas show dead players as missing in action
 ```
@@ -186,6 +188,7 @@ ttt_safekeeper_warn_pick_complete 1    // Whether to warn a safe's owner when it
 ttt_safekeeper_move_safe          1    // Whether an Safekeeper can move their safe
 ttt_safekeeper_move_cooldown      30   // How long a Safekeeper must wait after placing their safe before they can move it again
 ttt_safekeeper_weapons_dropped    4    // How many weapons the Safekeeper's safe drops when it is picked open
+ttt_safekeeper_weapons_blocklist  ""   // The comma-separated list of weapon IDs to not give out. For example: "ttt_m9k_harpoon,weapon_ttt_slam"
 ```
 
 **Hooks**
