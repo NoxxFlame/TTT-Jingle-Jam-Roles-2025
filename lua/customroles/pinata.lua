@@ -1,6 +1,7 @@
 local ents = ents
 local hook = hook
 local player = player
+local string = string
 local table = table
 local timer = timer
 local weapons = weapons
@@ -44,6 +45,10 @@ ROLE.convars =
     {
         cvar = "ttt_pinata_announce",
         type = ROLE_CONVAR_TYPE_BOOL
+    },
+    {
+        cvar = "ttt_pinata_blocklist",
+        type = ROLE_CONVAR_TYPE_TEXT
     }
 }
 
@@ -64,6 +69,8 @@ local pinata_announce = CreateConVar("ttt_pinata_announce", "1", FCVAR_REPLICATE
 
 if SERVER then
     AddCSLuaFile()
+
+    local pinata_blocklist = CreateConVar("ttt_pinata_blocklist", "", FCVAR_NONE, "The comma-separated list of weapon IDs to not give out")
 
     -------------------
     -- ROLE FEATURES --
@@ -89,6 +96,7 @@ if SERVER then
         if phys:IsValid() then phys:ApplyForceCenter(Vector(math.Rand(-100, 100), math.Rand(-100, 100), 300) * phys:GetMass()) end
     end
 
+    local blocklist = {}
     AddHook("PostEntityTakeDamage", "Pinata_PostEntityTakeDamage", function(ent, dmginfo, taken)
         if not taken then return end
         if not IsPlayer(ent) or not ent:IsActivePinata() then return end
@@ -105,10 +113,18 @@ if SERVER then
             local weps = WeaponsGetList()
             local wep = nil
             for _, v in RandomPairs(weps) do
-                if v and not v.AutoSpawnable and v.CanBuy and #v.CanBuy > 0 and v.AllowDrop then
-                    wep = WEPS.GetClass(v)
-                    break
-                end
+                if not v then continue end
+
+                -- Only allow weapons that can be bought, can be dropped, and don't spawn on their own
+                if v.AutoSpawnable or not v.AllowDrop then continue end
+                if not v.CanBuy or #v.CanBuy == 0 then continue end
+
+                -- Also make sure the weapon isn't in the blocklist
+                local wepClass = WEPS.GetClass(v)
+                if TableHasValue(blocklist, wepClass) then continue end
+
+                wep = wepClass
+                break
             end
 
             -- Sanity check
@@ -127,6 +143,13 @@ if SERVER then
             local pinatas_damaged = att.TTTPinatasDamaged or {}
             TableInsert(pinatas_damaged, ent:SteamID64())
             att:SetProperty("TTTPinatasDamaged", pinatas_damaged, ent)
+        end
+    end)
+
+    AddHook("TTTBeginRound", "Pinata_TTTBeginRound", function()
+        blocklist = {}
+        for blocked_id in string.gmatch(pinata_blocklist:GetString(), "([^,]+)") do
+            TableInsert(blocklist, blocked_id:Trim())
         end
     end)
 

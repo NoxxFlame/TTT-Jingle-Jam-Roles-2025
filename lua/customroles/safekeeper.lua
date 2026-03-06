@@ -79,6 +79,10 @@ ROLE.convars =
         cvar = "ttt_safekeeper_weapons_dropped",
         type = ROLE_CONVAR_TYPE_NUM,
         decimal = 0
+    },
+    {
+        cvar = "ttt_safekeeper_weapons_blocklist",
+        type = ROLE_CONVAR_TYPE_TEXT
     }
 }
 

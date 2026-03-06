@@ -12,6 +12,7 @@ local AddHook = hook.Add
 local MathRandom = math.random
 local PlayerIterator = player.Iterator
 local StringUpper = string.upper
+local TableHasValue = table.HasValue
 local TableInsert = table.insert
 
 local ROLE = {}
@@ -36,28 +37,56 @@ ROLE.team = ROLE_TEAM_INDEPENDENT
 ROLE.convars =
 {
     {
+        cvar = "ttt_armsdealer_target_reveal",
+        type = ROLE_CONVAR_TYPE_BOOL
+    },
+    {
         cvar = "ttt_armsdealer_target_innocents",
         type = ROLE_CONVAR_TYPE_BOOL
+    },
+    {
+        cvar = "ttt_armsdealer_target_innocents_blocklist",
+        type = ROLE_CONVAR_TYPE_TEXT
     },
     {
         cvar = "ttt_armsdealer_target_detectives",
         type = ROLE_CONVAR_TYPE_BOOL
     },
     {
+        cvar = "ttt_armsdealer_target_detectives_blocklist",
+        type = ROLE_CONVAR_TYPE_TEXT
+    },
+    {
         cvar = "ttt_armsdealer_target_traitors",
         type = ROLE_CONVAR_TYPE_BOOL
+    },
+    {
+        cvar = "ttt_armsdealer_target_traitors_blocklist",
+        type = ROLE_CONVAR_TYPE_TEXT
     },
     {
         cvar = "ttt_armsdealer_target_independents",
         type = ROLE_CONVAR_TYPE_BOOL
     },
     {
+        cvar = "ttt_armsdealer_target_independents_blocklist",
+        type = ROLE_CONVAR_TYPE_TEXT
+    },
+    {
         cvar = "ttt_armsdealer_target_jesters",
         type = ROLE_CONVAR_TYPE_BOOL
     },
     {
+        cvar = "ttt_armsdealer_target_jesters_blocklist",
+        type = ROLE_CONVAR_TYPE_TEXT
+    },
+    {
         cvar = "ttt_armsdealer_target_monsters",
         type = ROLE_CONVAR_TYPE_BOOL
+    },
+    {
+        cvar = "ttt_armsdealer_target_monsters_blocklist",
+        type = ROLE_CONVAR_TYPE_TEXT
     },
     {
         cvar = "ttt_armsdealer_deal_require_los",
@@ -107,16 +136,22 @@ ROLE.convars =
         cvar = "ttt_armsdealer_deal_distance",
         type = ROLE_CONVAR_TYPE_NUM,
         decimal = 0
+    },
+    {
+        cvar = "ttt_armsdealer_deal_blocklist",
+        type = ROLE_CONVAR_TYPE_TEXT
     }
 }
 
 ROLE.translations = {
     ["english"] = {
         ["adldeal_dealing"] = "DEALING TO {target}",
+        ["adldeal_dealing_unknown"] = "DEALING",
         ["adldeal_failed"] = "DEALING FAILED",
         ["armsdealer_collect_hud"] = "Dealt Weapons: {dealt}/{total}",
         ["armsdealer_cooldown_hud"] = "Deal Cooldown: {time}",
         ["armsdealer_deal_notify"] = "You dealt \"{item}\" to {target}!",
+        ["armsdealer_deal_notify_unknown"] = "You dealt \"{item}\" to someone!",
         ["ev_armsdealerdealt"] = "{armsdealer} dealt \"{item}\" to {target}",
         ["score_adl_dealt"] = "Dealt",
         ["score_adl_weapons"] = "{count} Weapon(s)",
@@ -140,12 +175,43 @@ local armsdealer_deal_notify_delay_min = CreateConVar("ttt_armsdealer_deal_notif
 local armsdealer_deal_notify_delay_max = CreateConVar("ttt_armsdealer_deal_notify_delay_max", "30", FCVAR_REPLICATED, "The maximum delay before a player is notified a weapon has been dealt to them. Set this and \"ttt_armsdealer_deal_notify_delay_min\" to \"0\" to notify instantly", 0, 60)
 local armsdealer_deal_time = CreateConVar("ttt_armsdealer_deal_time", "15", FCVAR_REPLICATED, "How long (in seconds) it takes the Arms Dealer to deal a weapon to a target", 1, 60)
 local armsdealer_deal_to_win = CreateConVar("ttt_armsdealer_deal_to_win", "15", FCVAR_REPLICATED, "How many weapons the Arms Dealer has to deal to get a secondary win", 1, 25)
+local armsdealer_target_reveal = CreateConVar("ttt_armsdealer_target_reveal", "1", FCVAR_REPLICATED, "Whether targets that are successfully dealt to have their name and team affiliation revealed to the Arms Dealer", 0, 1)
 local armsdealer_target_innocents = CreateConVar("ttt_armsdealer_target_innocents", "0", FCVAR_REPLICATED, "Whether the Arms Dealer's target can be an innocent role (not including detectives)", 0, 1)
+local armsdealer_target_innocents_blocklist = CreateConVar("ttt_armsdealer_target_innocents_blocklist", "", FCVAR_REPLICATED, "The comma-delimited list of raw innocent (not including detectives) role names that should not be targeted by the Arms Dealer")
 local armsdealer_target_detectives = CreateConVar("ttt_armsdealer_target_detectives", "1", FCVAR_REPLICATED, "Whether the Arms Dealer's target can be a detective role", 0, 1)
+local armsdealer_target_detectives_blocklist = CreateConVar("ttt_armsdealer_target_detectives_blocklist", "", FCVAR_REPLICATED, "The comma-delimited list of raw detective role names that should not be targeted by the Arms Dealer")
 local armsdealer_target_traitors = CreateConVar("ttt_armsdealer_target_traitors", "1", FCVAR_REPLICATED, "Whether the Arms Dealer's target can be a traitor role", 0, 1)
+local armsdealer_target_traitors_blocklist = CreateConVar("ttt_armsdealer_target_traitors_blocklist", "", FCVAR_REPLICATED, "The comma-delimited list of raw traitor role names that should not be targeted by the Arms Dealer")
 local armsdealer_target_independents = CreateConVar("ttt_armsdealer_target_independents", "1", FCVAR_REPLICATED, "Whether the Arms Dealer's target can be an independent role", 0, 1)
+local armsdealer_target_independents_blocklist = CreateConVar("ttt_armsdealer_target_independents_blocklist", "clown,oldman", FCVAR_REPLICATED, "The comma-delimited list of raw independent role names that should not be targeted by the Arms Dealer")
 local armsdealer_target_jesters = CreateConVar("ttt_armsdealer_target_jesters", "0", FCVAR_REPLICATED, "Whether the Arms Dealer's target can be a jester role", 0, 1)
+local armsdealer_target_jesters_blocklist = CreateConVar("ttt_armsdealer_target_jesters_blocklist", "clown", FCVAR_REPLICATED, "The comma-delimited list of raw jester role names that should not be targeted by the Arms Dealer")
 local armsdealer_target_monsters = CreateConVar("ttt_armsdealer_target_monsters", "1", FCVAR_REPLICATED, "Whether the Arms Dealer's target can be a monster role", 0, 1)
+local armsdealer_target_monsters_blocklist = CreateConVar("ttt_armsdealer_target_monsters_blocklist", "", FCVAR_REPLICATED, "The comma-delimited list of raw monster role names that should not be targeted by the Arms Dealer")
+
+local blocklistInnocent = {}
+local blocklistDetective = {}
+local blocklistTraitor = {}
+local blocklistIndependent = {}
+local blocklistJester = {}
+local blocklistMonster = {}
+
+local function ParseBlocklist(cvar)
+    local tbl = {}
+    for blocked_id in string.gmatch(cvar:GetString(), "([^,]+)") do
+        TableInsert(tbl, blocked_id:Trim())
+    end
+    return tbl
+end
+
+AddHook("TTTBeginRound", "ArmsDealer_Shared_TTTBeginRound", function()
+    blocklistInnocent = ParseBlocklist(armsdealer_target_innocents_blocklist)
+    blocklistDetective = ParseBlocklist(armsdealer_target_detectives_blocklist)
+    blocklistTraitor = ParseBlocklist(armsdealer_target_traitors_blocklist)
+    blocklistIndependent = ParseBlocklist(armsdealer_target_independents_blocklist)
+    blocklistJester = ParseBlocklist(armsdealer_target_jesters_blocklist)
+    blocklistMonster = ParseBlocklist(armsdealer_target_monsters_blocklist)
+end)
 
 if SERVER then
     local plymeta = FindMetaTable("Player")
@@ -153,28 +219,44 @@ if SERVER then
 
     AddCSLuaFile()
 
+    local blocklistWeapons = {}
+
     util.AddNetworkString("TTT_ArmsDealerItemDealt")
 
     ------------------
     -- ROLE CONVARS --
     ------------------
 
+    local armsdealer_deal_blocklist = CreateConVar("ttt_armsdealer_deal_blocklist", "", FCVAR_NONE, "The comma-separated list of weapon IDs to not give out")
     local armsdealer_deal_failure_cooldown = CreateConVar("ttt_armsdealer_deal_failure_cooldown", "3", FCVAR_NONE, "How long (in seconds) after the Arms Dealer loses their target before they can try to deal another thing", 0, 60)
     local armsdealer_deal_float_time = CreateConVar("ttt_armsdealer_deal_float_time", "3", FCVAR_NONE, "The amount of time (in seconds) it takes for the Arms Dealer to lose their target after getting out of range", 0, 60)
     local armsdealer_deal_require_los = CreateConVar("ttt_armsdealer_deal_require_los", "1", FCVAR_NONE, "Whether the Arms Dealer requires line-of-sight to deal something", 0, 1)
     local armsdealer_deal_distance = CreateConVar("ttt_armsdealer_deal_distance", "5", FCVAR_NONE, "How close (in meters) the Arms Dealer needs to be to their target to start dealing", 1, 15)
 
     function plymeta:CanArmsDealerDealTo()
-        if self.TTTArmsDealerCooldownTime and CurTime() < (self.TTTArmsDealerCooldownTime + armsdealer_deal_target_cooldown:GetInt()) then return false end
-        if self:IsGlitch() or self:IsTraitorTeam() then return armsdealer_target_traitors:GetBool() end
-        if self:IsInnocentTeam() then
-            if self:IsDetectiveTeam() then return armsdealer_target_detectives:GetBool() end
-            return armsdealer_target_innocents:GetBool()
+        if self.TTTArmsDealerCooldownTime and CurTime() < (self.TTTArmsDealerCooldownTime + armsdealer_deal_target_cooldown:GetInt()) then
+            return false
         end
-        if self:IsIndependentTeam() then return armsdealer_target_independents:GetBool() end
-        if self:IsJesterTeam() then return armsdealer_target_jesters:GetBool() end
-        if self:IsMonsterTeam() then return armsdealer_target_monsters:GetBool() end
 
+        local roleRaw = self:GetRoleStringRaw()
+        if self:IsGlitch() or self:IsTraitorTeam() then
+            return armsdealer_target_traitors:GetBool() and not TableHasValue(blocklistTraitor, roleRaw)
+        end
+        if self:IsInnocentTeam() then
+            if self:IsDetectiveTeam() then
+                return armsdealer_target_detectives:GetBool() and not TableHasValue(blocklistDetective, roleRaw)
+            end
+            return armsdealer_target_innocents:GetBool() and not TableHasValue(blocklistInnocent, roleRaw)
+        end
+        if self:IsIndependentTeam() then
+            return armsdealer_target_independents:GetBool() and not TableHasValue(blocklistIndependent, roleRaw)
+        end
+        if self:IsJesterTeam() then
+            return armsdealer_target_jesters:GetBool() and not TableHasValue(blocklistJester, roleRaw)
+        end
+        if self:IsMonsterTeam() then
+            return armsdealer_target_monsters:GetBool() and not TableHasValue(blocklistMonster, roleRaw)
+        end
         return false
     end
 
@@ -332,10 +414,13 @@ if SERVER then
                     if v.AutoSpawnable or not v.AllowDrop then continue end
                     if not v.CanBuy or #v.CanBuy == 0 then continue end
 
-                    -- Also make sure the target can use this weapon
+                    -- Make sure the target can use this weapon
                     local wepClass = WEPS.GetClass(v)
                     if target:HasWeapon(wepClass) then continue end
                     if not target:CanCarryType(v.Kind) then continue end
+
+                    -- Also make sure the weapon isn't in the blocklist
+                    if TableHasValue(blocklistWeapons, wepClass) then continue end
 
                     TableInsert(items, wepClass)
                 end
@@ -357,7 +442,13 @@ if SERVER then
                         ply:SetProperty("TTTArmsDealerDealStartTime", curTime + deal_failure_cooldown, ply)
                     end
                     ply:ClearQueuedMessage("adlDealFailed")
-                    ply:QueueMessage(MSG_PRINTCENTER, target:Nick() .. " has no room for your weapons, try someone else!", nil, "adlDealFailed")
+                    local targetName
+                    if armsdealer_target_reveal:GetBool() then
+                        targetName = target:Nick()
+                    else
+                        targetName = "Your target"
+                    end
+                    ply:QueueMessage(MSG_PRINTCENTER, targetName .. " has no room for your weapons, try someone else!", nil, "adlDealFailed")
                     return
                 end
 
@@ -389,7 +480,7 @@ if SERVER then
                 local function DoNotify()
                     if not IsPlayer(target) then return end
                     if not target:Alive() or target:IsSpec() then return end
-                    target:QueueMessage(MSG_PRINTBOTH, "The " .. ROLE_STRINGS[ROLE_ARMSDEALER] .. " as dealt you a weapon!")
+                    target:QueueMessage(MSG_PRINTBOTH, "The " .. ROLE_STRINGS[ROLE_ARMSDEALER] .. " has dealt you a weapon!")
                 end
 
                 -- Notify instantly
@@ -401,6 +492,10 @@ if SERVER then
                 end
             end
         end
+    end)
+
+    AddHook("TTTBeginRound", "ArmsDealer_TTTBeginRound", function()
+        blocklistWeapons = ParseBlocklist(armsdealer_deal_blocklist)
     end)
 
     AddHook("TTTOnRoleAbilityEnabled", "ArmsDealer_TTTOnRoleAbilityEnabled", function(ply)
@@ -622,7 +717,12 @@ if CLIENT then
         elseif state >= ARMSDEALER_DEAL_STATE_DEALING then
             if endTime < 0 then return end
 
-            local text = PT("adldeal_dealing", {target = target:Nick()})
+            local text
+            if armsdealer_target_reveal:GetBool() then
+                text = PT("adldeal_dealing", {target = target:Nick()})
+            else
+                text = T("adldeal_dealing_unknown")
+            end
             local color = Color(0, 255, 0, 155)
             if state == ARMSDEALER_DEAL_STATE_LOSING then
                 color = Color(255, 255, 0, 155)
@@ -744,8 +844,10 @@ if CLIENT then
         if not IsPlayer(target) then return end
         if not IsPlayer(armsdealer) then return end
 
-        -- Mark the target as known to the Arms Dealer and reveal any previously-unknown team affiliation
-        target.TTTArmsDealerRevealed = true
+        if armsdealer_target_reveal:GetBool() then
+            -- Mark the target as known to the Arms Dealer and reveal any previously-unknown team affiliation
+            target.TTTArmsDealerRevealed = true
+        end
 
         -- If this client is the armsdealer that did the dealing, use this
         -- method to also notify them of what they dealt
@@ -753,7 +855,12 @@ if CLIENT then
             client = LocalPlayer()
         end
         if client == armsdealer then
-            local message = LANG.GetParamTranslation("armsdealer_deal_notify", {item = item, target = target:Nick()})
+            local message
+            if armsdealer_target_reveal:GetBool() then
+                message = LANG.GetParamTranslation("armsdealer_deal_notify", {item = item, target = target:Nick()})
+            else
+                message = LANG.GetTranslation("armsdealer_deal_notify_unknown")
+            end
             client:ClearQueuedMessage("adlDealFailed")
             client:QueueMessage(MSG_PRINTBOTH, message)
         end
@@ -820,22 +927,46 @@ if CLIENT then
             else
                 html = html .. "the following</span>:<ul>"
                 if target_innocents then
-                    html = html .. "<li>" .. T("innocents") .. "</li>"
+                    html = html .. "<li>" .. T("innocents") .. " (not including " .. T("detectives")
+                    if #blocklistInnocent > 0 then
+                        html = html .. ", " .. table.concat(blocklistInnocent, ", ")
+                    end
+                    html = html .. ")</li>"
                 end
                 if target_detectives then
-                    html = html .. "<li>" .. T("detectives") .. "</li>"
+                    html = html .. "<li>" .. T("detectives")
+                    if #blocklistDetective > 0 then
+                        html = html .. " (not including: " .. table.concat(blocklistDetective, ", ") .. ")"
+                    end
+                    html = html .. "</li>"
                 end
                 if target_traitors then
-                    html = html .. "<li>" .. T("traitors") .. "</li>"
+                    html = html .. "<li>" .. T("traitors")
+                    if #blocklistTraitor > 0 then
+                        html = html .. " (not including: " .. table.concat(blocklistTraitor, ", ") .. ")"
+                    end
+                    html = html .. "</li>"
                 end
                 if target_independents then
-                    html = html .. "<li>" .. T("independents") .. "</li>"
+                    html = html .. "<li>" .. T("independents")
+                    if #blocklistIndependent > 0 then
+                        html = html .. " (not including: " .. table.concat(blocklistIndependent, ", ") .. ")"
+                    end
+                    html = html .. "</li>"
                 end
                 if target_jesters then
-                    html = html .. "<li>" .. T("jesters") .. "</li>"
+                    html = html .. "<li>" .. T("jesters")
+                    if #blocklistJester > 0 then
+                        html = html .. " (not including: " .. table.concat(blocklistJester, ", ") .. ")"
+                    end
+                    html = html .. "</li>"
                 end
                 if target_monsters then
-                    html = html .. "<li>" .. T("monsters") .. "</li>"
+                    html = html .. "<li>" .. T("monsters")
+                    if #blocklistMonster > 0 then
+                        html = html .. " (not including: " .. table.concat(blocklistMonster, ", ") .. ")"
+                    end
+                    html = html .. "</li>"
                 end
                 html = html .. "</ul></span>"
             end
@@ -850,11 +981,17 @@ if CLIENT then
             end
 
             if delay_min >= 0 then
-                local time = "after a short delay"
+                local time
                 if delay_min == 0 then
                     time = "immediately"
+                else
+                    time = "after a short delay"
                 end
                 html = html .. "<span style='display: block; margin-top: 10px;'>Be careful though! Players <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>are notified when they are given a weapon</span> " .. time .. ". Be sure to be sneaky or blend in with other players to disguise that you are the " .. ROLE_STRINGS[ROLE_ARMSDEALER] .. ".</span>"
+            end
+
+            if armsdealer_target_reveal:GetBool() then
+                html = html .. "<span style='display: block; margin-top: 10px;'>After the " .. ROLE_STRINGS[ROLE_ARMSDEALER] .. " deals a weapon to a player, <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>the target's team is revealed</span> to the " .. ROLE_STRINGS[ROLE_ARMSDEALER] .. ".</span>"
             end
 
             -- Cooldown
