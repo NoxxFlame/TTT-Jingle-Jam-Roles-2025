@@ -10,28 +10,35 @@ The Arms Dealer is an Independent that makes arms deals sneakily while trying to
 \
 **ConVars**
 ```cpp
-ttt_armsdealer_enabled               0   // Whether or not an Arms Dealer should spawn
-ttt_armsdealer_spawn_weight          1   // The weight assigned to spawning an Arms Dealer
-ttt_armsdealer_min_players           0   // The minimum number of players required to spawn an Arms Dealer
-ttt_armsdealer_starting_health       100 // The amount of health an Arms Dealer starts with
-ttt_armsdealer_max_health            100 // The maximum amount of health an Arms Dealer can have
-ttt_armsdealer_deal_distance         5   // How close (in meters) the Arms Dealer needs to be to their target to start dealing
-ttt_armsdealer_deal_failure_cooldown 3   // How long (in seconds) after the Arms Dealer loses their target before they can try to deal another thing
-ttt_armsdealer_deal_float_time       3   // The amount of time (in seconds) it takes for the Arms Dealer to lose their target after getting out of range
-ttt_armsdealer_deal_notify_delay_min 0   // The minimum delay before a player is notified a weapon has been dealt to them. Set to "-1" to disable notifications. Set this and "ttt_armsdealer_deal_notify_delay_max" to "0" to notify instantly
-ttt_armsdealer_deal_notify_delay_max 30  // The maximum delay before a player is notified a weapon has been dealt to them. Set this and "ttt_armsdealer_deal_notify_delay_min" to "0" to notify instantly
-ttt_armsdealer_deal_require_los      1   // Whether the Arms Dealer requires line-of-sight to deal something
-ttt_armsdealer_deal_success_cooldown 0   // How long (in seconds) after the Arms Dealer deals something before they can deal with anyone again
-ttt_armsdealer_deal_target_cooldown  30  // How long (in seconds) after the Arms Dealer deals something to a target before that target can be dealt to again
-ttt_armsdealer_deal_time             15  // How long (in seconds) it takes the Arms Dealer to deal a weapon to a target
-ttt_armsdealer_deal_to_win           15  // How many weapons the Arms Dealer has to deal to get a secondary win
-ttt_armsdealer_target_detectives     1   // Whether the Arms Dealer's target can be a detective role
-ttt_armsdealer_target_independents   1   // Whether the Arms Dealer's target can be an independent role
-ttt_armsdealer_target_innocents      0   // Whether the Arms Dealer's target can be an innocent role (not including detectives)
-ttt_armsdealer_target_jesters        0   // Whether the Arms Dealer's target can be a jester role
-ttt_armsdealer_target_monsters       1   // Whether the Arms Dealer's target can be a monster role
-ttt_armsdealer_target_traitors       1   // Whether the Arms Dealer's target can be a traitor role
-ttt_armsdealer_blocklist             ""  // The comma-separated list of weapon IDs to not give out. For example: "ttt_m9k_harpoon,weapon_ttt_slam"
+ttt_armsdealer_enabled                       0   // Whether or not an Arms Dealer should spawn
+ttt_armsdealer_spawn_weight                  1   // The weight assigned to spawning an Arms Dealer
+ttt_armsdealer_min_players                   0   // The minimum number of players required to spawn an Arms Dealer
+ttt_armsdealer_starting_health               100 // The amount of health an Arms Dealer starts with
+ttt_armsdealer_max_health                    100 // The maximum amount of health an Arms Dealer can have
+ttt_armsdealer_deal_blocklist                ""  // The comma-separated list of weapon IDs to not give out
+ttt_armsdealer_deal_distance                 5   // How close (in meters) the Arms Dealer needs to be to their target to start dealing
+ttt_armsdealer_deal_failure_cooldown         3   // How long (in seconds) after the Arms Dealer loses their target before they can try to deal another thing
+ttt_armsdealer_deal_float_time               3   // The amount of time (in seconds) it takes for the Arms Dealer to lose their target after getting out of range
+ttt_armsdealer_deal_notify_delay_max         30  // The maximum delay before a player is notified a weapon has been dealt to them. Set this and "ttt_armsdealer_deal_notify_delay_min" to "0" to notify instantly
+ttt_armsdealer_deal_notify_delay_min         0   // The minimum delay before a player is notified a weapon has been dealt to them. Set to "-1" to disable notifications. Set this and "ttt_armsdealer_deal_notify_delay_max" to "0" to notify instantly
+ttt_armsdealer_deal_require_los              1   // Whether the Arms Dealer requires line-of-sight to deal something
+ttt_armsdealer_deal_success_cooldown         0   // How long (in seconds) after the Arms Dealer deals something before they can deal with anyone again
+ttt_armsdealer_deal_target_cooldown          30  // How long (in seconds) after the Arms Dealer deals something to a target before that target can be dealt to again
+ttt_armsdealer_deal_time                     15  // How long (in seconds) it takes the Arms Dealer to deal a weapon to a target
+ttt_armsdealer_deal_to_win                   15  // How many weapons the Arms Dealer has to deal to get a secondary win
+ttt_armsdealer_target_detectives             1   // Whether the Arms Dealer's target can be a detective role
+ttt_armsdealer_target_detectives_blocklist   ""  // The comma-delimited list of raw detective role names that should not be targeted by the Arms Dealer
+ttt_armsdealer_target_independents           1   // Whether the Arms Dealer's target can be an independent role
+ttt_armsdealer_target_independents_blocklist "clown,oldman" // The comma-delimited list of raw independent role names that should not be targeted by the Arms Dealer
+ttt_armsdealer_target_innocents              0   // Whether the Arms Dealer's target can be an innocent role (not including detectives)
+ttt_armsdealer_target_innocents_blocklist    ""  // The comma-delimited list of raw innocent (not including detectives) role names that should not be targeted by the Arms Dealer
+ttt_armsdealer_target_jesters                0   // Whether the Arms Dealer's target can be a jester role
+ttt_armsdealer_target_jesters_blocklist      ""  // The comma-delimited list of raw jester role names that should not be targeted by the Arms Dealer
+ttt_armsdealer_target_monsters               1   // Whether the Arms Dealer's target can be a monster role
+ttt_armsdealer_target_monsters_blocklist     ""  // The comma-delimited list of raw monster role names that should not be targeted by the Arms Dealer
+ttt_armsdealer_target_traitors               1   // Whether the Arms Dealer's target can be a traitor role
+ttt_armsdealer_target_traitors_blocklist     ""  // The comma-delimited list of raw traitor role names that should not be targeted by the Arms Dealer
+
 ```
 
 ## ![Role Icon](/gamemodes/terrortown/content/materials/vgui/ttt/roles/chf/tab_chf.png) Chef

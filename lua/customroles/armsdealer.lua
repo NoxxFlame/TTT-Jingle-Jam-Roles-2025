@@ -41,24 +41,48 @@ ROLE.convars =
         type = ROLE_CONVAR_TYPE_BOOL
     },
     {
+        cvar = "ttt_armsdealer_target_innocents_blocklist",
+        type = ROLE_CONVAR_TYPE_TEXT
+    },
+    {
         cvar = "ttt_armsdealer_target_detectives",
         type = ROLE_CONVAR_TYPE_BOOL
+    },
+    {
+        cvar = "ttt_armsdealer_target_detectives_blocklist",
+        type = ROLE_CONVAR_TYPE_TEXT
     },
     {
         cvar = "ttt_armsdealer_target_traitors",
         type = ROLE_CONVAR_TYPE_BOOL
     },
     {
+        cvar = "ttt_armsdealer_target_traitors_blocklist",
+        type = ROLE_CONVAR_TYPE_TEXT
+    },
+    {
         cvar = "ttt_armsdealer_target_independents",
         type = ROLE_CONVAR_TYPE_BOOL
+    },
+    {
+        cvar = "ttt_armsdealer_target_independents_blocklist",
+        type = ROLE_CONVAR_TYPE_TEXT
     },
     {
         cvar = "ttt_armsdealer_target_jesters",
         type = ROLE_CONVAR_TYPE_BOOL
     },
     {
+        cvar = "ttt_armsdealer_target_jesters_blocklist",
+        type = ROLE_CONVAR_TYPE_TEXT
+    },
+    {
         cvar = "ttt_armsdealer_target_monsters",
         type = ROLE_CONVAR_TYPE_BOOL
+    },
+    {
+        cvar = "ttt_armsdealer_target_monsters_blocklist",
+        type = ROLE_CONVAR_TYPE_TEXT
     },
     {
         cvar = "ttt_armsdealer_deal_require_los",
@@ -110,7 +134,7 @@ ROLE.convars =
         decimal = 0
     },
     {
-        cvar = "ttt_armsdealer_blocklist",
+        cvar = "ttt_armsdealer_deal_blocklist",
         type = ROLE_CONVAR_TYPE_TEXT
     }
 }
@@ -146,11 +170,40 @@ local armsdealer_deal_notify_delay_max = CreateConVar("ttt_armsdealer_deal_notif
 local armsdealer_deal_time = CreateConVar("ttt_armsdealer_deal_time", "15", FCVAR_REPLICATED, "How long (in seconds) it takes the Arms Dealer to deal a weapon to a target", 1, 60)
 local armsdealer_deal_to_win = CreateConVar("ttt_armsdealer_deal_to_win", "15", FCVAR_REPLICATED, "How many weapons the Arms Dealer has to deal to get a secondary win", 1, 25)
 local armsdealer_target_innocents = CreateConVar("ttt_armsdealer_target_innocents", "0", FCVAR_REPLICATED, "Whether the Arms Dealer's target can be an innocent role (not including detectives)", 0, 1)
+local armsdealer_target_innocents_blocklist = CreateConVar("ttt_armsdealer_target_innocents_blocklist", "", FCVAR_REPLICATED, "The comma-delimited list of raw innocent (not including detectives) role names that should not be targeted by the Arms Dealer")
 local armsdealer_target_detectives = CreateConVar("ttt_armsdealer_target_detectives", "1", FCVAR_REPLICATED, "Whether the Arms Dealer's target can be a detective role", 0, 1)
+local armsdealer_target_detectives_blocklist = CreateConVar("ttt_armsdealer_target_detectives_blocklist", "", FCVAR_REPLICATED, "The comma-delimited list of raw detective role names that should not be targeted by the Arms Dealer")
 local armsdealer_target_traitors = CreateConVar("ttt_armsdealer_target_traitors", "1", FCVAR_REPLICATED, "Whether the Arms Dealer's target can be a traitor role", 0, 1)
+local armsdealer_target_traitors_blocklist = CreateConVar("ttt_armsdealer_target_traitors_blocklist", "", FCVAR_REPLICATED, "The comma-delimited list of raw traitor role names that should not be targeted by the Arms Dealer")
 local armsdealer_target_independents = CreateConVar("ttt_armsdealer_target_independents", "1", FCVAR_REPLICATED, "Whether the Arms Dealer's target can be an independent role", 0, 1)
+local armsdealer_target_independents_blocklist = CreateConVar("ttt_armsdealer_target_independents_blocklist", "clown,oldman", FCVAR_REPLICATED, "The comma-delimited list of raw independent role names that should not be targeted by the Arms Dealer")
 local armsdealer_target_jesters = CreateConVar("ttt_armsdealer_target_jesters", "0", FCVAR_REPLICATED, "Whether the Arms Dealer's target can be a jester role", 0, 1)
+local armsdealer_target_jesters_blocklist = CreateConVar("ttt_armsdealer_target_jesters_blocklist", "clown", FCVAR_REPLICATED, "The comma-delimited list of raw jester role names that should not be targeted by the Arms Dealer")
 local armsdealer_target_monsters = CreateConVar("ttt_armsdealer_target_monsters", "1", FCVAR_REPLICATED, "Whether the Arms Dealer's target can be a monster role", 0, 1)
+local armsdealer_target_monsters_blocklist = CreateConVar("ttt_armsdealer_target_monsters_blocklist", "", FCVAR_REPLICATED, "The comma-delimited list of raw monster role names that should not be targeted by the Arms Dealer")
+local blocklistInnocent = {}
+local blocklistDetective = {}
+local blocklistTraitor = {}
+local blocklistIndependent = {}
+local blocklistJester = {}
+local blocklistMonster = {}
+
+local function ParseBlocklist(cvar)
+    local tbl = {}
+    for blocked_id in string.gmatch(cvar:GetString(), "([^,]+)") do
+        TableInsert(tbl, blocked_id:Trim())
+    end
+    return tbl
+end
+
+AddHook("TTTBeginRound", "ArmsDealer_Shared_TTTBeginRound", function()
+    blocklistInnocent = ParseBlocklist(armsdealer_target_innocents_blocklist)
+    blocklistDetective = ParseBlocklist(armsdealer_target_detectives_blocklist)
+    blocklistTraitor = ParseBlocklist(armsdealer_target_traitors_blocklist)
+    blocklistIndependent = ParseBlocklist(armsdealer_target_independents_blocklist)
+    blocklistJester = ParseBlocklist(armsdealer_target_jesters_blocklist)
+    blocklistMonster = ParseBlocklist(armsdealer_target_monsters_blocklist)
+end)
 
 if SERVER then
     local plymeta = FindMetaTable("Player")
@@ -158,7 +211,7 @@ if SERVER then
 
     AddCSLuaFile()
 
-    local armsdealer_blocklist = CreateConVar("ttt_armsdealer_blocklist", "", FCVAR_NONE, "The comma-separated list of weapon IDs to not give out")
+    local blocklistWeapons = {}
 
     util.AddNetworkString("TTT_ArmsDealerItemDealt")
 
@@ -166,22 +219,36 @@ if SERVER then
     -- ROLE CONVARS --
     ------------------
 
+    local armsdealer_deal_blocklist = CreateConVar("ttt_armsdealer_deal_blocklist", "", FCVAR_NONE, "The comma-separated list of weapon IDs to not give out")
     local armsdealer_deal_failure_cooldown = CreateConVar("ttt_armsdealer_deal_failure_cooldown", "3", FCVAR_NONE, "How long (in seconds) after the Arms Dealer loses their target before they can try to deal another thing", 0, 60)
     local armsdealer_deal_float_time = CreateConVar("ttt_armsdealer_deal_float_time", "3", FCVAR_NONE, "The amount of time (in seconds) it takes for the Arms Dealer to lose their target after getting out of range", 0, 60)
     local armsdealer_deal_require_los = CreateConVar("ttt_armsdealer_deal_require_los", "1", FCVAR_NONE, "Whether the Arms Dealer requires line-of-sight to deal something", 0, 1)
     local armsdealer_deal_distance = CreateConVar("ttt_armsdealer_deal_distance", "5", FCVAR_NONE, "How close (in meters) the Arms Dealer needs to be to their target to start dealing", 1, 15)
 
     function plymeta:CanArmsDealerDealTo()
-        if self.TTTArmsDealerCooldownTime and CurTime() < (self.TTTArmsDealerCooldownTime + armsdealer_deal_target_cooldown:GetInt()) then return false end
-        if self:IsGlitch() or self:IsTraitorTeam() then return armsdealer_target_traitors:GetBool() end
-        if self:IsInnocentTeam() then
-            if self:IsDetectiveTeam() then return armsdealer_target_detectives:GetBool() end
-            return armsdealer_target_innocents:GetBool()
+        if self.TTTArmsDealerCooldownTime and CurTime() < (self.TTTArmsDealerCooldownTime + armsdealer_deal_target_cooldown:GetInt()) then
+            return false
         end
-        if self:IsIndependentTeam() then return armsdealer_target_independents:GetBool() end
-        if self:IsJesterTeam() then return armsdealer_target_jesters:GetBool() end
-        if self:IsMonsterTeam() then return armsdealer_target_monsters:GetBool() end
 
+        local roleRaw = self:GetRoleStringRaw()
+        if self:IsGlitch() or self:IsTraitorTeam() then
+            return armsdealer_target_traitors:GetBool() and not TableHasValue(blocklistTraitor, roleRaw)
+        end
+        if self:IsInnocentTeam() then
+            if self:IsDetectiveTeam() then
+                return armsdealer_target_detectives:GetBool() and not TableHasValue(blocklistDetective, roleRaw)
+            end
+            return armsdealer_target_innocents:GetBool() and not TableHasValue(blocklistInnocent, roleRaw)
+        end
+        if self:IsIndependentTeam() then
+            return armsdealer_target_independents:GetBool() and not TableHasValue(blocklistIndependent, roleRaw)
+        end
+        if self:IsJesterTeam() then
+            return armsdealer_target_jesters:GetBool() and not TableHasValue(blocklistJester, roleRaw)
+        end
+        if self:IsMonsterTeam() then
+            return armsdealer_target_monsters:GetBool() and not TableHasValue(blocklistMonster, roleRaw)
+        end
         return false
     end
 
@@ -221,7 +288,6 @@ if SERVER then
         end
     end)
 
-    local blocklist = {}
     AddHook("TTTPlayerAliveThink", "ArmsDealer_TTTPlayerAliveThink_Deal", function(ply)
         if GetRoundState() ~= ROUND_ACTIVE then return end
         if not ply:IsArmsDealer() then return end
@@ -346,7 +412,7 @@ if SERVER then
                     if not target:CanCarryType(v.Kind) then continue end
 
                     -- Also make sure the weapon isn't in the blocklist
-                    if TableHasValue(blocklist, wepClass) then continue end
+                    if TableHasValue(blocklistWeapons, wepClass) then continue end
 
                     TableInsert(items, wepClass)
                 end
@@ -415,10 +481,7 @@ if SERVER then
     end)
 
     AddHook("TTTBeginRound", "ArmsDealer_TTTBeginRound", function()
-        blocklist = {}
-        for blocked_id in string.gmatch(armsdealer_blocklist:GetString(), "([^,]+)") do
-            TableInsert(blocklist, blocked_id:Trim())
-        end
+        blocklistWeapons = ParseBlocklist(armsdealer_deal_blocklist)
     end)
 
     AddHook("TTTOnRoleAbilityEnabled", "ArmsDealer_TTTOnRoleAbilityEnabled", function(ply)
@@ -838,22 +901,46 @@ if CLIENT then
             else
                 html = html .. "the following</span>:<ul>"
                 if target_innocents then
-                    html = html .. "<li>" .. T("innocents") .. "</li>"
+                    html = html .. "<li>" .. T("innocents") .. " (not including " .. T("detectives")
+                    if #blocklistInnocent > 0 then
+                        html = html .. ", " .. table.concat(blocklistInnocent, ", ")
+                    end
+                    html = html .. ")</li>"
                 end
                 if target_detectives then
-                    html = html .. "<li>" .. T("detectives") .. "</li>"
+                    html = html .. "<li>" .. T("detectives")
+                    if #blocklistDetective > 0 then
+                        html = html .. " (not including: " .. table.concat(blocklistDetective, ", ") .. ")"
+                    end
+                    html = html .. "</li>"
                 end
                 if target_traitors then
-                    html = html .. "<li>" .. T("traitors") .. "</li>"
+                    html = html .. "<li>" .. T("traitors")
+                    if #blocklistTraitor > 0 then
+                        html = html .. " (not including: " .. table.concat(blocklistTraitor, ", ") .. ")"
+                    end
+                    html = html .. "</li>"
                 end
                 if target_independents then
-                    html = html .. "<li>" .. T("independents") .. "</li>"
+                    html = html .. "<li>" .. T("independents")
+                    if #blocklistIndependent > 0 then
+                        html = html .. " (not including: " .. table.concat(blocklistIndependent, ", ") .. ")"
+                    end
+                    html = html .. "</li>"
                 end
                 if target_jesters then
-                    html = html .. "<li>" .. T("jesters") .. "</li>"
+                    html = html .. "<li>" .. T("jesters")
+                    if #blocklistJester > 0 then
+                        html = html .. " (not including: " .. table.concat(blocklistJester, ", ") .. ")"
+                    end
+                    html = html .. "</li>"
                 end
                 if target_monsters then
-                    html = html .. "<li>" .. T("monsters") .. "</li>"
+                    html = html .. "<li>" .. T("monsters")
+                    if #blocklistMonster > 0 then
+                        html = html .. " (not including: " .. table.concat(blocklistMonster, ", ") .. ")"
+                    end
+                    html = html .. "</li>"
                 end
                 html = html .. "</ul></span>"
             end
