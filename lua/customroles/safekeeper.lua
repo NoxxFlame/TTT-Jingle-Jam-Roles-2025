@@ -159,7 +159,7 @@ if SERVER then
     AddHook("PostPlayerDeath", "Safekeeper_PostPlayerDeath", function(ply)
         if not IsPlayer(ply) then return end
 
-        -- If a player died the can't be picking the safe anymore, so clear that state
+        -- If a player died, they can't be picking the safe anymore so clear that state
         ResetPickState(ply)
     end)
 
