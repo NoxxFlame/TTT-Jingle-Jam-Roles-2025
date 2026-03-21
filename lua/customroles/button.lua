@@ -24,10 +24,10 @@ ROLE.nameplural = "Buttons"
 ROLE.nameext = "a Button"
 ROLE.nameshort = "btn"
 
-ROLE.desc = [[You are {role}! Get traitors to push
-you enough times to win, But don't let the timer
-run out without an innocent turning you back or the
-traitors will win instead!]]
+ROLE.desc = [[You are {role}! Get {traitors} to push
+you enough times to win, but don't let the timer
+run out without {aninnocent} turning you back or the
+{traitors} will win instead!]]
 ROLE.shortdesc = "Turns into a button that wants to be pressed to win, but if no one stops the countdown traitors win instead."
 
 ROLE.team = ROLE_TEAM_JESTER
@@ -131,7 +131,7 @@ if SERVER then
     -- DAMAGE --
     ------------
 
-    AddHook("EntityTakeDamage", "Guesser_EntityTakeDamage", function(ent, dmginfo)
+    AddHook("EntityTakeDamage", "Button_EntityTakeDamage", function(ent, dmginfo)
         if GetRoundState() < ROUND_ACTIVE then return end
         if not IsPlayer(ent) then return end
         if not ent:IsButton() then return end
@@ -511,7 +511,7 @@ if CLIENT then
 
     AddHook("TTTScoreboardPlayerRole", "Button_TTTScoreboardPlayerRole", function(ply, cli, color, roleFileName)
         if GetRoundState() < ROUND_ACTIVE then return end
-        if (cli:IsTraitorTeam() and ply:IsButton()) then
+        if cli:IsTraitorTeam() and ply:IsButton() then
             return ROLE_COLORS_SCOREBOARD[ROLE_BUTTON], ROLE_STRINGS_SHORT[ROLE_BUTTON]
         end
     end)

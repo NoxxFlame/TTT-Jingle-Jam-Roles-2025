@@ -33,16 +33,14 @@ if CLIENT then
                     else
                         hint = hint .. "_stop"
                     end
-                else
-                    if client:IsTraitorTeam() or not button_traitor_activate_only:GetBool() then
-                        if GetGlobalBool("ttt_button_pressed", false) then
-                            hint = hint .. "_double"
-                        else
-                            hint = hint .. "_start"
-                        end
+                elseif client:IsTraitorTeam() or not button_traitor_activate_only:GetBool() then
+                    if GetGlobalBool("ttt_button_pressed", false) then
+                        hint = hint .. "_double"
                     else
-                        return nil
+                        hint = hint .. "_start"
                     end
+                else
+                    return nil
                 end
 
                 return LANG.GetParamTranslation(hint, hint_params)
@@ -130,7 +128,6 @@ if SERVER then
                     net.Start("TTT_ButtonResetSounds")
                     net.Broadcast()
                 end
-
 
                 if self.ButtonPly.TTTButtonPresses then
                     self.ButtonPly:SetProperty("TTTButtonPresses", self.ButtonPly.TTTButtonPresses + 1)

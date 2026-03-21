@@ -125,16 +125,16 @@ function SWEP:SecondaryAttack()
     if not IsPlayer(owner) then return end
 
     if self.Button:GetPressed() then
-        owner:ClearQueuedMessage("bamTransformerBlock")
-        owner:QueueMessage(MSG_PRINTBOTH, "You can't transform back while the timer is running...", nil, "bamTransformerBlock")
+        owner:ClearQueuedMessage("btnTransformerBlock")
+        owner:QueueMessage(MSG_PRINTBOTH, "You can't transform back while the timer is running...", nil, "btnTransformerBlock")
         return
     end
 
     if self.TransformBackTime and self.TransformBackTime > CurTime() then
         local remaining = MathCeil(self.TransformBackTime - CurTime())
         local plural = remaining > 1 and "s" or ""
-        owner:ClearQueuedMessage("bamTransformerBlock")
-        owner:QueueMessage(MSG_PRINTBOTH, "You have to wait about " .. remaining .. " more second" .. plural .. " before changing back...", nil, "bamTransformerBlock")
+        owner:ClearQueuedMessage("btnTransformerBlock")
+        owner:QueueMessage(MSG_PRINTBOTH, "You have to wait about " .. remaining .. " more second" .. plural .. " before changing back...", nil, "btnTransformerBlock")
         return
     end
 
