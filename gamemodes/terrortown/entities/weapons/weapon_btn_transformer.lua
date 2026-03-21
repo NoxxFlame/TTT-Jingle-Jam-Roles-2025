@@ -91,7 +91,6 @@ function SWEP:PrimaryAttack()
     local height = (eyes.z - feet.z) * 0.8
     local pos = feet + Vector(0, 0, height)
 
-
     ent:SetPos(pos)
     -- Make sure the button is on the ground
     ent:DropToFloor(MASK_BLOCKLOS)
