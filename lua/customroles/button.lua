@@ -399,16 +399,15 @@ if CLIENT then
     AddHook("HUDPaint", "Button_HUDPaint", function()
         local x = ((ScrW() - timerWidth) / 2) + timer_offset_x:GetInt();
         local y = timer_offset_y:GetInt();
-        local remaining = MathMax(0, GetGlobalFloat("ttt_button_timer_end", 0) - CurTime())
+        local remaining = MathMax(0, GetGlobalFloat("ttt_button_timer_end", -1) - CurTime())
         if GetGlobalBool("ttt_button_pressed", false) then
             surface.SetDrawColor(255, 0, 0, 192)
             DrawSevenSegmentNumber(remaining, x, y, segmentWidth, segmentLength, segmentMargin)
-            lastTimerValue = remaining
         elseif button_countdown_pause:GetBool() then
-            local timeLeft = GetGlobalFloat("ttt_button_time_left", 0)
+            local timeLeft = GetGlobalFloat("ttt_button_time_left", -1)
             if timeLeft > 0 then
                 surface.SetDrawColor(0, 255, 0, 192)
-                DrawSevenSegmentNumber(lastTimerValue, x, y, segmentWidth, segmentLength, segmentMargin)
+                DrawSevenSegmentNumber(timeLeft, x, y, segmentWidth, segmentLength, segmentMargin)
             end
         end
     end)
@@ -426,7 +425,7 @@ if CLIENT then
     }
     AddHook("RenderScreenspaceEffects", "Button_RenderScreenspaceEffects", function()
         if not GetGlobalBool("ttt_button_pressed", false) then return end
-        local remaining = MathMax(0, GetGlobalFloat("ttt_button_timer_end", 0) - CurTime())
+        local remaining = MathMax(0, GetGlobalFloat("ttt_button_timer_end", -1) - CurTime())
         if MathFloor(remaining) % 2 == 0 then
             DrawColorModify(redTint)
         end
@@ -441,7 +440,7 @@ if CLIENT then
     AddHook("Think", "Button_Think", function()
         if not GetGlobalBool("ttt_button_pressed", false) then return end
 
-        local remaining = MathMax(0, GetGlobalFloat("ttt_button_timer_end", 0) - CurTime())
+        local remaining = MathMax(0, GetGlobalFloat("ttt_button_timer_end", -1) - CurTime())
         for k, v in ipairs(playedNumber) do
             if not v and remaining < k then
                 playedNumber[k] = true
@@ -535,7 +534,7 @@ if CLIENT then
         if role == ROLE_BUTTON then
             local roleColor = ROLE_COLORS[ROLE_BUTTON]
             local html = "The " .. ROLE_STRINGS[ROLE_BUTTON] .. " is a <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>jester role</span>"
-
+            html = html .. button_presses_to_win:GetInt() .. button_reset_mode:GetInt() .. button_traitor_activate_only:GetInt() -- Placeholders to make luacheck happy until I actually add the tutorial
             return html
         end
     end)

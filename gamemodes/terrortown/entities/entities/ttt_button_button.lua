@@ -122,7 +122,7 @@ if SERVER then
                 self:SetColor(COLOR_GREEN)
                 SetGlobalBool("ttt_button_pressed", false)
 
-                local remaining = math.max(0, GetGlobalFloat("ttt_button_timer_end", 0) - CurTime())
+                local remaining = math.max(0, GetGlobalFloat("ttt_button_timer_end", -1) - CurTime())
                 SetGlobalFloat("ttt_button_timer_end", -1)
                 if button_countdown_pause:GetBool() then
                     SetGlobalFloat("ttt_button_time_left", remaining)
