@@ -396,11 +396,14 @@ if SERVER then
             targetSubject = targetSubject .. "r damage resistance"
         end
 
-        if not spent then return end
+        if spent then
+            ply:QueueMessage(MSG_PRINTBOTH, "You have " .. verb .. " " .. goblinSubject)
+            target:QueueMessage(MSG_PRINTBOTH, string.Capitalize(ROLE_STRINGS_EXT[ROLE_MINDGOBLIN]) .. " has " .. verb .. " " .. targetSubject .. "!")
+            ply:SetProperty("TTTMindGoblinPossessingPower", power - spent, ply)
+        end
 
-        ply:QueueMessage(MSG_PRINTBOTH, "You have " .. verb .. " " .. goblinSubject)
-        target:QueueMessage(MSG_PRINTBOTH, string.Capitalize(ROLE_STRINGS_EXT[ROLE_MINDGOBLIN]) .. " has " .. verb .. " " .. targetSubject .. "!")
-        ply:SetProperty("TTTMindGoblinPossessingPower", power - spent, ply)
+        -- Prevent normal spectator buttons
+        return true
     end)
 
     AddHook("EntityTakeDamage", "MindGoblin_EntityTakeDamage", function(ply, dmginfo)
