@@ -187,6 +187,22 @@ if SERVER then
     AddHook("TTTPlayerRoleChanged", "Button_TTTPlayerRoleChanged", function(ply, oldRole, newRole)
         if oldRole == ROLE_BUTTON and newRole ~= ROLE_BUTTON then
             if ply.ButtonEnt then
+                if ply.ButtonEnt:GetPressed() and SERVER then
+                    SetGlobalBool("ttt_button_pressed", false)
+
+                    local remaining = math.max(0, GetGlobalFloat("ttt_button_timer_end", -1) - CurTime())
+                    SetGlobalFloat("ttt_button_timer_end", -1)
+                    if button_countdown_pause:GetBool() then
+                        SetGlobalFloat("ttt_button_time_left", remaining)
+                    else
+                        net.Start("TTT_ButtonResetSounds")
+                        net.Broadcast()
+                    end
+
+                    net.Start("TTT_ButtonPlaySound")
+                    net.WriteString("HL1/fvox/bell.wav")
+                    net.Broadcast()
+                end
                 ply.ButtonEnt:Remove()
                 ply.ButtonEnt = nil
                 ply:SetParent(nil)
