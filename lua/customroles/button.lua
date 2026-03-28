@@ -464,7 +464,7 @@ if CLIENT then
 
     net.Receive("TTT_ButtonPlaySound", function()
         local sound = net.ReadString()
-        surface.PlaySound("button/" .. sound .. ".wav")
+        surface.PlaySound(sound)
     end)
 
     ---------------

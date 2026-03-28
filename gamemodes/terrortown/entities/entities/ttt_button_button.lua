@@ -79,15 +79,37 @@ function ENT:Initialize()
     self:SetCollisionGroup(COLLISION_GROUP_INTERACTIVE)
 
     if CLIENT then
-        hook.Add("PreDrawHalos", "Button_PreDrawHalos_" .. self:EntIndex(), function()
-            if self:GetPressed() then
-                halo.Add({self}, COLOR_RED, 1, 1, 1, true, true)
-            elseif LocalPlayer():IsTraitorTeam() then
-                halo.Add({self}, COLOR_GREEN, 1, 1, 1, true, true)
+        local beacon_back = surface.GetTextureID("vgui/ttt/beacon_back")
+        local beacon_btn = surface.GetTextureID("vgui/ttt/beacon_btn")
+        hook.Add("HUDPaint", "Button_HUDPaint_" .. self:EntIndex(), function()
+            local client = LocalPlayer()
+            if self:GetPressed() or client:IsTraitorTeam() then
+                local pos = self:GetPos()
+
+                local alpha = math.Clamp((pos:DistToSqr(client:EyePos()) - 1600) / 4800, 0, 1) -- Fade out the radar ping as you get closer to the button
+                if alpha > 0 then
+                    local target = {pos = pos}
+
+                    surface.SetFont("HudSelectionText")
+
+                    surface.SetTexture(beacon_back)
+                    surface.SetTextColor(0, 0, 0, 0)
+                    if self:GetPressed() then
+                        surface.SetDrawColor(255, 0, 0, 230 * alpha)
+                    else
+                        surface.SetDrawColor(0, 255, 0, 230 * alpha)
+                    end
+                    RADAR:DrawTarget(target, 16, 0.5)
+
+                    surface.SetTexture(beacon_btn)
+                    surface.SetTextColor(255, 255, 255, 255 * alpha)
+                    surface.SetDrawColor(255, 255, 255, 255 * alpha)
+                    RADAR:DrawTarget(target, 16, 0.5)
+                end
             end
         end)
 
-        local mat = Material("dev/graygrid")
+        local mat = Material("vgui/ttt/btn_graygrid") -- Use our own material here because the default dev_graygrid is 'LightmappedGeneric' which doesn't play nice with drawing quads for some reason
         hook.Add("PostDrawTranslucentRenderables", "Button_PostDrawTranslucentRenderables_" .. self:EntIndex(), function(depth, skybox)
             local top = self:GetPos()
             local bottom = top - Vector(0, 0, self:GetHeight())
@@ -139,7 +161,9 @@ if SERVER then
                     net.Broadcast()
                 end
 
-                -- TODO: Sound when button is reset
+                net.Start("TTT_ButtonPlaySound")
+                net.WriteString("HL1/fvox/bell.wav")
+                net.Broadcast()
             end
         elseif (activator:IsTraitorTeam() or not button_traitor_activate_only:GetBool()) and not GetGlobalBool("ttt_button_pressed", false) then
             self:SetPresser(activator)
@@ -155,7 +179,7 @@ if SERVER then
             end
 
             net.Start("TTT_ButtonPlaySound")
-            net.WriteString("alarm")
+            net.WriteString("button/alarm.wav")
             net.Broadcast()
         end
 
@@ -166,7 +190,7 @@ end
 
 if CLIENT then
     function ENT:OnRemove()
-        hook.Remove("PreDrawHalos", "Button_PreDrawHalos_" .. self:EntIndex())
+        hook.Remove("HUDPaint", "Button_HUDPaint_" .. self:EntIndex())
         hook.Remove("PostDrawTranslucentRenderables", "Button_PostDrawTranslucentRenderables_" .. self:EntIndex())
     end
 end
