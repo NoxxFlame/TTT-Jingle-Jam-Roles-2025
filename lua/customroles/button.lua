@@ -530,11 +530,39 @@ if CLIENT then
     --------------
 
     AddHook("TTTTutorialRoleText", "Button_TTTTutorialRoleText", function(role, titleLabel)
-        -- TODO: Add tutorial
         if role == ROLE_BUTTON then
+            local T = LANG.GetTranslation
             local roleColor = ROLE_COLORS[ROLE_BUTTON]
-            local html = "The " .. ROLE_STRINGS[ROLE_BUTTON] .. " is a <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>jester role</span>"
-            html = html .. button_presses_to_win:GetInt() .. button_reset_mode:GetInt() .. button_traitor_activate_only:GetInt() -- Placeholders to make luacheck happy until I actually add the tutorial
+            local html = "The " .. ROLE_STRINGS[ROLE_BUTTON] .. " is a <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>jester role</span> that can transform into a button."
+
+            html = html .. "<span style='display: block; margin-top: 10px;'>"
+            if button_traitor_activate_only:GetBool() then
+                html = html .. T("traitors")
+            else
+                html = html .. "Anyone"
+            end
+            html = html .. " can push the button to start a <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>" .. button_countdown_length:GetFloat() .. " second countdown</span>. If the countdown reaches 0 the " .. T("traitors") .. " win.</span>"
+
+            html = html .. "<span style='display: block; margin-top: 10px;'>"
+            local reset_mode = button_reset_mode:GetInt()
+            if reset_mode == BUTTON_RESET_BLOCK_NONE then
+                html = html .. "Anyone"
+            elseif reset_mode == BUTTON_RESET_BLOCK_PRESSER then
+                html = html .. "Anyone other than the player who started the countdown"
+            else
+                html = html .. "Non-" .. T("traitors")
+            end
+            html = html .. " can press the button to <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>"
+            if button_countdown_pause:GetBool() then
+                html = html .. "pause"
+            else
+                html = html .. "reset"
+            end
+            html = html .. " the countdown</span>.</span>"
+
+            html = html .. "<span style='display: block; margin-top: 10px;'>The Button can transform freely while the countdown isn't running. While transformed, the Button's location is revealed to " .. T("traitors") .. ", or to all players if the countdown is running.</span>"
+
+            html = html .. "<span style='display: block; margin-top: 10px;'>The Button wins if they are pressed to start the countdown, and then pressed again to stop the countdown <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>" .. button_presses_to_win:GetInt() .. " times</span>.</span>"
             return html
         end
     end)
