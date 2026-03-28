@@ -200,7 +200,7 @@ if SERVER then
                     end
 
                     net.Start("TTT_ButtonPlaySound")
-                    net.WriteString("HL1/fvox/bell.wav")
+                    net.WriteString("hl1/fvox/bell.wav")
                     net.Broadcast()
                 end
                 ply.ButtonEnt:Remove()
@@ -576,9 +576,9 @@ if CLIENT then
             end
             html = html .. " the countdown</span>.</span>"
 
-            html = html .. "<span style='display: block; margin-top: 10px;'>The Button can transform freely while the countdown isn't running. While transformed, the Button's location is revealed to " .. T("traitors") .. ", or to all players if the countdown is running.</span>"
+            html = html .. "<span style='display: block; margin-top: 10px;'>The " .. ROLE_STRINGS[ROLE_BUTTON] .. " can transform freely while the countdown isn't running. While transformed, the " .. ROLE_STRINGS[ROLE_BUTTON] .. "'s location is revealed to " .. T("traitors") .. ", or to all players if the countdown is running.</span>"
 
-            html = html .. "<span style='display: block; margin-top: 10px;'>The Button wins if they are pressed to start the countdown, and then pressed again to stop the countdown <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>" .. button_presses_to_win:GetInt() .. " times</span>.</span>"
+            html = html .. "<span style='display: block; margin-top: 10px;'>The " .. ROLE_STRINGS[ROLE_BUTTON] .. " wins if they are pressed to start the countdown, and then pressed again to stop the countdown <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>" .. button_presses_to_win:GetInt() .. " times</span>.</span>"
             return html
         end
     end)

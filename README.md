@@ -43,7 +43,7 @@ ttt_armsdealer_target_traitors_blocklist     ""  // The comma-delimited list of 
 ```
 
 ## ![Role Icon](/gamemodes/terrortown/content/materials/vgui/ttt/roles/btn/tab_btn.png) Button
-_Suggested By_: Nick\
+_Contributed By_: Nick\
 The Button is a Jester role that can transform into a button that wants to be pressed to win, but if no one stops the countdown traitors win instead.
 \
 \

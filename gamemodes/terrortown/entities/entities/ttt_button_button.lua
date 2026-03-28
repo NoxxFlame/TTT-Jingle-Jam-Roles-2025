@@ -162,7 +162,7 @@ if SERVER then
                 end
 
                 net.Start("TTT_ButtonPlaySound")
-                net.WriteString("HL1/fvox/bell.wav")
+                net.WriteString("hl1/fvox/bell.wav")
                 net.Broadcast()
             end
         elseif (activator:IsTraitorTeam() or not button_traitor_activate_only:GetBool()) and not GetGlobalBool("ttt_button_pressed", false) then
