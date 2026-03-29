@@ -74,9 +74,9 @@ local function AddBuffHook(ply, entIndex, foodType, amount)
             TableInsert(mults, 1 + amount)
         end)
     elseif foodType == CHEF_FOOD_TYPE_FISH then
-        hookType = "ScalePlayerDamage"
+        hookType = "EntityTakeDamage"
         hookName = "Chef_" .. hookType .. "_" .. foodType .. "_" .. entIndex
-        AddHook(hookType, hookName, function(tgt, hitgroup, dmginfo)
+        AddHook(hookType, hookName, function(tgt, dmginfo)
             if not IsPlayer(tgt) then return end
 
             local att = dmginfo:GetAttacker()
