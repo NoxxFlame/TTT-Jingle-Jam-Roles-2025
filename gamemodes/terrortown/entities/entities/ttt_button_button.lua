@@ -22,6 +22,7 @@ if CLIENT then
             hint = "but_button_hint",
             fmt  = function(ent, txt)
                 if not IsValid(button) then return nil end
+                if client == button:GetPlayer() then return nil end
                 if not client:Alive() or client:IsSpec() then return nil end
 
                 local hint = txt
@@ -62,6 +63,7 @@ ENT.PressCooldown = -1
 function ENT:SetupDataTables()
     self:NetworkVar("Bool", "Pressed")
     self:NetworkVar("Entity", "Presser")
+    self:NetworkVar("Entity", "Player")
     self:NetworkVar("Float", "Height")
 end
 
@@ -129,8 +131,26 @@ function ENT:Initialize()
 end
 
 if SERVER then
+    ENT.TimerElapsed = false
+
+    function ENT:Think()
+        local curTime = CurTime()
+        local timerEnd = GetGlobalFloat("ttt_button_timer_end", -1)
+        if timerEnd ~= -1 and curTime > timerEnd then
+            self.TimerElapsed = true
+            return
+        end
+
+        self:NextThink(curTime + 0.1)
+        return true
+    end
+
     function ENT:Use(activator)
+        if self.TimerElapsed then return end
         if self.PressCooldown > CurTime() then return end
+
+        local buttonPly = self:GetPlayer()
+        if activator == buttonPly then return end
 
         if self:GetPressed() then
             local resetMode = button_reset_mode:GetInt()
@@ -151,12 +171,12 @@ if SERVER then
                     net.Broadcast()
                 end
 
-                if self.ButtonPly.TTTButtonPresses then
-                    self.ButtonPly:SetProperty("TTTButtonPresses", self.ButtonPly.TTTButtonPresses + 1)
+                if buttonPly.TTTButtonPresses then
+                    buttonPly:SetProperty("TTTButtonPresses", buttonPly.TTTButtonPresses + 1)
                 else
-                    self.ButtonPly:SetProperty("TTTButtonPresses", 1)
+                    buttonPly:SetProperty("TTTButtonPresses", 1)
                 end
-                if self.ButtonPly.TTTButtonPresses == button_presses_to_win:GetInt() then
+                if buttonPly.TTTButtonPresses >= button_presses_to_win:GetInt() then
                     net.Start("TTT_UpdateButtonWins")
                     net.Broadcast()
                 end
