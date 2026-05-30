@@ -1,5 +1,9 @@
 local concommand = concommand
+local draw = draw
 local hook = hook
+local ipairs = ipairs
+local surface = surface
+local string = string
 local table = table
 local timer = timer
 local math = math
@@ -76,8 +80,7 @@ local boxMaxX = boxMinX + gachaWidth
 local boxMinY = ((ScrH() - gachaHeight - bodyHeight + bodyOverlap) / 2) + gacha_offset_y:GetInt()
 local boxMaxY = boxMinY + gachaHeight
 
-local rarityColours = {Color(166, 166, 166), Color(0, 182, 33), Color(0, 146, 240), Color(143, 21, 185), Color(255, 192, 0)}
-local prizeBall = {rarity=5}
+local prizeBall = {rarity=GAMER.Rarities.Legendary}
 
 local gachaBalls = {}
 local function CreateBall(x, y, rarity)
@@ -110,10 +113,12 @@ local function AnimateGacha()
         local offset = false
         for y = boxMinY + ballRadius, boxMaxY - ballRadius, ballRadius * 2 do
             offset = not offset
+
+            local rarity = MathRandom(GAMER.Rarities.Uncommon, GAMER.Rarities.Legendary)
             if offset then
-                CreateBall(x + MathRandom(-10, 10) + ballRadius, y + MathRandom(-10, 10), MathRandom(1,5))
+                CreateBall(x + MathRandom(-10, 10) + ballRadius, y + MathRandom(-10, 10), rarity)
             else
-                CreateBall(x + MathRandom(-10, 10), y + MathRandom(-10, 10), MathRandom(1,5))
+                CreateBall(x + MathRandom(-10, 10), y + MathRandom(-10, 10), rarity)
             end
         end
     end
@@ -205,7 +210,7 @@ local function DrawBall(ball)
         local a = MathRad((i/32) * -360) + ball.a - (ball.x / ballRadius)
         TableInsert(semicirclePoly, { x = ball.x + MathSin(a) * ballRadius + xOffset, y = ball.y + MathCos(a) * ballRadius })
     end
-    surface.SetDrawColor(rarityColours[ball.rarity])
+    surface.SetDrawColor(GAMER.Config.Rarities[ball.rarity].color)
     surface.DrawPoly(semicirclePoly)
 
     semicirclePoly = {}
@@ -252,7 +257,7 @@ local function DrawPrizeBall()
         local a = MathRad((i/64) * -360) + (MathPi / 2)
         TableInsert(semicirclePoly, { x = x + MathSin(a) * radius, y = y + MathCos(a) * radius + yOffset })
     end
-    surface.SetDrawColor(rarityColours[prizeBall.rarity])
+    surface.SetDrawColor(GAMER.Config.Rarities[prizeBall.rarity].color)
     surface.DrawPoly(semicirclePoly)
 
     semicirclePoly = {}
@@ -415,8 +420,18 @@ AddHook("HUDPaint", "Gamer_HUDPaint", function()
         surface.DrawTexturedRect(ScrW() / 2 - 128, ScrH() / 2 - 128, 256, 256)
         draw.NoTexture()
 
-        DrawOutlinedText("DORITOS [LEGENDARY]", "TraitorState", ScrW() / 2, ScrH() / 2 + 160, Color(255, 192, 0, prizeTextAlpha), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-        DrawOutlinedText("Get two free gacha rolls", "TraitorStateSmall", ScrW() / 2, ScrH() / 2 + 192, Color(255, 255, 255, prizeTextAlpha), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+        -- TODO: Don't hardcode this
+        local prize = GAMER.Prizes[1]
+        local r, g, b = GAMER.Config.Rarities[prize.rarity].color:Unpack()
+        local prizeColor = Color(r, g, b, prizeTextAlpha)
+
+        local name = LANG.GetTranslation(prize.name)
+        local desc = LANG.GetTranslation(prize.description)
+        local rarity = LANG.GetTranslation(GAMER.Config.Rarities[prize.rarity].name)
+        local text = string.upper(LANG.GetParamTranslation("gamer_prize_display_format", { name = name, rarity = rarity }))
+
+        DrawOutlinedText(text, "TraitorState", ScrW() / 2, ScrH() / 2 + 160, prizeColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+        DrawOutlinedText(desc, "TraitorStateSmall", ScrW() / 2, ScrH() / 2 + 192, Color(255, 255, 255, prizeTextAlpha), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
     end
 
     -- Prize Ball
@@ -426,5 +441,4 @@ AddHook("HUDPaint", "Gamer_HUDPaint", function()
 
     -- Cover
     DrawOutlinedRect(boxMaxX - (ballRadius * 4), boxMaxY + bodyHeight - bodyOverlap - (ballRadius * 4), ballRadius * 3, (ballRadius * 4) * outputHeight, 200, 200, 200)
-
 end)
