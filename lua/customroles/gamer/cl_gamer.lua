@@ -84,7 +84,7 @@ local prizeBall = nil
 
 local gachaBalls = {}
 local function CreateBall(x, y, rarity)
-    TableInsert(gachaBalls, {x=x, y=y, rarity=rarity, vx=MathRand(-5,5), vy=MathRand(-5,5), a=MathRand(0, 2 * MathPi)})
+    TableInsert(gachaBalls, {x=x, y=y, Rarity=rarity, vx=MathRand(-5,5), vy=MathRand(-5,5), a=MathRand(0, 2 * MathPi)})
 end
 
 local function RemoveBall()
@@ -221,7 +221,7 @@ local function DrawBall(ball)
         local a = MathRad((i/32) * -360) + ball.a - (ball.x / ballRadius)
         TableInsert(semicirclePoly, { x = ball.x + MathSin(a) * ballRadius + xOffset, y = ball.y + MathCos(a) * ballRadius })
     end
-    surface.SetDrawColor(GAMER.Config.Rarities[ball.rarity].color)
+    surface.SetDrawColor(GAMER.Config.Rarities[ball.Rarity].Color)
     surface.DrawPoly(semicirclePoly)
 
     semicirclePoly = {}
@@ -268,7 +268,7 @@ local function DrawPrizeBall()
         local a = MathRad((i/64) * -360) + (MathPi / 2)
         TableInsert(semicirclePoly, { x = x + MathSin(a) * radius, y = y + MathCos(a) * radius + yOffset })
     end
-    surface.SetDrawColor(GAMER.Config.Rarities[prizeBall.rarity].color)
+    surface.SetDrawColor(GAMER.Config.Rarities[prizeBall.Rarity].Color)
     surface.DrawPoly(semicirclePoly)
 
     semicirclePoly = {}
@@ -427,16 +427,16 @@ AddHook("HUDPaint", "Gamer_HUDPaint", function()
     -- Prize
     if drawPrize then
         surface.SetDrawColor(255, 255, 255, prizeAlpha)
-        surface.SetMaterial(prizeBall.icon)
+        surface.SetMaterial(prizeBall.Icon)
         surface.DrawTexturedRect(ScrW() / 2 - 128, ScrH() / 2 - 128, 256, 256)
         draw.NoTexture()
 
-        local r, g, b = GAMER.Config.Rarities[prizeBall.rarity].color:Unpack()
+        local r, g, b = GAMER.Config.Rarities[prizeBall.Rarity].Color:Unpack()
         local prizeColor = Color(r, g, b, prizeTextAlpha)
 
-        local name = LANG.GetTranslation(prizeBall.name)
-        local desc = LANG.GetTranslation(prizeBall.description)
-        local rarity = LANG.GetTranslation(GAMER.Config.Rarities[prizeBall.rarity].name)
+        local name = LANG.GetTranslation(prizeBall.Name)
+        local desc = LANG.GetTranslation(prizeBall.Description)
+        local rarity = LANG.GetTranslation(GAMER.Config.Rarities[prizeBall.Rarity].Name)
         local text = string.upper(LANG.GetParamTranslation("gamer_prize_display_format", { name = name, rarity = rarity }))
 
         DrawOutlinedText(text, "TraitorState", ScrW() / 2, ScrH() / 2 + 160, prizeColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)

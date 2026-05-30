@@ -1,3 +1,10 @@
+local file = file
+local ipairs = ipairs
+local table = table
+
+local FileFind = file.Find
+local TableHasValue = table.HasValue
+
 local ROLE = {}
 
 ROLE.nameraw = "gamer"
@@ -13,8 +20,8 @@ ROLE.team = ROLE_TEAM_DETECTIVE
 
 ROLE.translations = {
     ["english"] = {
-        ["gamer_rarity_uncommon"] = "Uncommon",
         ["gamer_rarity_common"] = "Common",
+        ["gamer_rarity_uncommon"] = "Uncommon",
         ["gamer_rarity_rare"] = "Rare",
         ["gamer_rarity_epic"] = "Epic",
         ["gamer_rarity_legendary"] = "Legendary",
@@ -28,41 +35,39 @@ RegisterRole(ROLE)
 
 GAMER = GAMER or {}
 GAMER.Rarities = GAMER.Rarities or {
-    Uncommon = 1,
-    Common = 2,
+    Common = 1,
+    Uncommon = 2,
     Rare = 3,
     Epic = 4,
     Legendary = 5
 }
 GAMER.Config = GAMER.Config or {
     Rarities = {
-        [GAMER.Rarities.Uncommon] = { name = "gamer_rarity_uncommon", color = Color(166, 166, 166) },
-        [GAMER.Rarities.Common] = { name = "gamer_rarity_common", color = Color(0, 182, 33) },
-        [GAMER.Rarities.Rare] = { name = "gamer_rarity_rare", color = Color(0, 146, 240) },
-        [GAMER.Rarities.Epic] = { name = "gamer_rarity_epic", color = Color(143, 21, 185) },
-        [GAMER.Rarities.Legendary] = { name = "gamer_rarity_legendary", color = Color(255, 192, 0) }
+        [GAMER.Rarities.Common] = { Name = "gamer_rarity_common", Color = Color(166, 166, 166) },
+        [GAMER.Rarities.Uncommon] = { Name = "gamer_rarity_uncommon", Color = Color(0, 182, 33) },
+        [GAMER.Rarities.Rare] = { Name = "gamer_rarity_rare", Color = Color(0, 146, 240) },
+        [GAMER.Rarities.Epic] = { Name = "gamer_rarity_epic", Color = Color(143, 21, 185) },
+        [GAMER.Rarities.Legendary] = { Name = "gamer_rarity_legendary", Color = Color(255, 192, 0) }
     }
     -- TODO: Timing?
 }
-GAMER.Prizes = GAMER.Prizes or {
-    ["doritos"] = {
-        name = "gamer_prize_doritos_name",
-        description = "gamer_prize_doritos_desc",
-        rarity = GAMER.Rarities.Legendary,
-        icon = Material("vgui/ttt/gamer/doritos.png")
-    }
-}
+GAMER.Prizes = GAMER.Prizes or {}
 
-function GAMER.AddPrize(id, prize)
-    if GAMER.Prizes[id] then
-        ErrorNoHaltWithStack("A prize with the given id ('" .. id .. "') already exists")
+function GAMER.AddPrize(prize)
+    if GAMER.Prizes[prize.Id] then return end
+
+    if type(prize.Rarity) ~= "number" or not TableHasValue(GAMER.Rarities, prize.Rarity) then
+        ErrorNoHaltWithStack("Invalid rarity ('" .. prize.Rarity .. "') for prize with ID: " .. prize.Id)
         return
     end
 
-    if type(prize.rarity) ~= "number" or not table.HasValue(GAMER.Rarities, prize.rarity) then
-        ErrorNoHaltWithStack("Invalid rarity ('" .. prize.rarity .. "') for prize with ID: " .. id)
-        return
-    end
+    GAMER.Prizes[prize.Id] = prize
+end
 
-    GAMER.Prizes[id] = prize
+local files, _ = FileFind("customroles/gamer/prizes/*.lua", "LUA")
+for _, fil in ipairs(files) do
+    if SERVER then
+        AddCSLuaFile("customroles/gamer/prizes/" .. fil)
+    end
+    include("customroles/gamer/prizes/" .. fil)
 end
