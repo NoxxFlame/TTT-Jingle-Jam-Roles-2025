@@ -11,7 +11,6 @@ ROLE.shortdesc = ""
 
 ROLE.team = ROLE_TEAM_DETECTIVE
 
-
 ROLE.translations = {
     ["english"] = {
         ["gamer_rarity_uncommon"] = "Uncommon",
@@ -46,10 +45,11 @@ GAMER.Config = GAMER.Config or {
     -- TODO: Timing?
 }
 GAMER.Prizes = GAMER.Prizes or {
-    {
+    ["doritos"] = {
         name = "gamer_prize_doritos_name",
         description = "gamer_prize_doritos_desc",
-        rarity = GAMER.Rarities.Legendary
+        rarity = GAMER.Rarities.Legendary,
+        icon = Material("vgui/ttt/gamer/doritos.png")
     }
 }
 
