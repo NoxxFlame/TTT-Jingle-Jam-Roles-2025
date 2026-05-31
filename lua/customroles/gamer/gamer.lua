@@ -71,7 +71,10 @@ AddHook("TTTOrderedEquipment", "Gamer_TTTOrderedEquipment", function(ply, id, is
     elseif isequip == EQUIP_GAMER_SPAGHETTI then
         ply:EmitSound("gamer/spaghetti.mp3", 100, 100, 1, CHAN_ITEM)
     elseif isequip == EQUIP_GAMER_MILK then
-        -- TODO: ??
+        -- TODO:
+        -- Eliminate fall damage
+        -- Increase melee damage
+        -- Occasionally create fart cloud
         ply:EmitSound("gamer/milk.mp3", 100, 100, 1, CHAN_ITEM)
     end
 end)
@@ -102,7 +105,9 @@ local function Cleanup()
     for _, p in PlayerIterator() do
         timer.Remove("TTTGmrGachaPrize_" .. p:SteamID64())
         p.TTTGamerSpaghettiHealTime = nil
-        p:ClearProperty("TTTGamerHasUniquePrize", p)
+        p.TTTGamerHasUniquePrize = nil
+        p.TTTGamerPrizes = nil
+
         p:ClearProperty("TTTGamerCheetoMarked")
         if p.SetMaxJumpLevel then
             p:SetMaxJumpLevel(jumps)

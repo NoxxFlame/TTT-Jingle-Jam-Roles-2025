@@ -45,7 +45,7 @@ ROLE.translations = {
         ["item_gamer_spaghetti"] = "Mom's Spaghetti",
         ["item_gamer_spaghetti_desc"] = "Heals you periodically for the rest of the round",
         ["item_gamer_milk"] = "Choccy Milk",
-        ["item_gamer_milk_desc"] = "TODO: ???"
+        ["item_gamer_milk_desc"] = "Eliminates fall damage and increases melee damage. Hope you're not lactose intolerant though..."
     }
 }
 

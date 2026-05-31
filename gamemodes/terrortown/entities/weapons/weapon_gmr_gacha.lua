@@ -78,15 +78,15 @@ local function ChooseRandomPrize(ply)
     local prizes = {}
     for _, prize in pairs(GAMER.Prizes) do
         if prize.IsUnique and ply.TTTGamerHasUniquePrize then continue end
+
+        local plyPrizes = ply.TTTGamerPrizes or {}
+        if TableHasValue(plyPrizes, prize.Id) then continue end
         if not prize:CanStart(ply) then continue end
 
-        -- TODO: What happens if a player gets a duplicate?
         if prize.Rarity == targetRarity then
             TableInsert(prizes, prize)
         end
     end
-
-    -- TODO: What if prizes is empty somehow?
 
     -- TODO: For testing
     if #prizes == 0 then
@@ -126,8 +126,12 @@ function SWEP:PrimaryAttack()
             prize:Start(owner)
 
             if prize.IsUnique then
-                owner:SetProperty("TTTGamerHasUniquePrize", true, owner)
+                owner.TTTGamerHasUniquePrize = true
             end
+
+            local prizes = owner.TTTGamerPrizes or {}
+            TableInsert(prizes, prize.Id)
+            owner.TTTGamerPrizes = prizes
         end)
 
         if ammo == 1 then
