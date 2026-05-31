@@ -41,6 +41,16 @@ ROLE.convars = {
         cvar = "ttt_gamer_mtdew_speed_boost",
         type = ROLE_CONVAR_TYPE_NUM,
         decimal = 2
+    },
+    {
+        cvar = "ttt_gamer_spaghetti_amount",
+        type = ROLE_CONVAR_TYPE_NUM,
+        decimal = 0
+    },
+    {
+        cvar = "ttt_gamer_spaghetti_interval",
+        type = ROLE_CONVAR_TYPE_NUM,
+        decimal = 0
     }
 }
 

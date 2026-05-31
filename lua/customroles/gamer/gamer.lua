@@ -1,13 +1,22 @@
 local cvars = cvars
 local hook = hook
+local math = math
 local player = player
 local timer = timer
 local util = util
 
 local AddHook = hook.Add
+local MathMin = math.min
 local PlayerIterator = player.Iterator
 
 util.AddNetworkString("TTTGamerGachaStart")
+
+------------------
+-- ROLE CONVARS --
+------------------
+
+local gamer_spaghetti_amount = CreateConVar("ttt_gamer_spaghetti_amount", "5", FCVAR_REPLICATED, "The amount of health a player should regain per interval after they each spaghetti", 1, 25)
+local gamer_spaghetti_interval = CreateConVar("ttt_gamer_spaghetti_interval", "1", FCVAR_REPLICATED, "How often a player who eats spaghetti should regain health", 1, 60)
 
 ----------------
 -- ROLE LOGIC --
@@ -53,11 +62,26 @@ AddHook("TTTOrderedEquipment", "Gamer_TTTOrderedEquipment", function(ply, id, is
         if IsValid(fingers) then
             fingers:SetClip1(math.max(0, fingers:Clip1()) + 1)
         end
-    elseif isequip == EQUIP_GAMER_SPAGHETTI then
-        -- TODO: Provides 5% health regen per second (unsure if permanent or not)
     elseif isequip == EQUIP_GAMER_MILK then
         -- TODO: ??
     end
+end)
+
+AddHook("TTTPlayerAliveThink", "Gamer_Spaghetti_TTTPlayerAliveThink", function(ply)
+    if not IsPlayer(ply) then return end
+    if not ply:HasEquipmentItem(EQUIP_GAMER_SPAGHETTI) then return end
+
+    local lastHeal = ply.TTTGamerSpaghettiHealTime or 0
+    local curTime = CurTime()
+    if lastHeal + gamer_spaghetti_interval:GetInt() > curTime then return end
+
+    ply.TTTGamerSpaghettiHealTime = curTime
+
+    local hp = ply:Health()
+    local newHp = MathMin(ply:GetMaxHealth(), hp + gamer_spaghetti_amount:GetInt())
+    if hp >= newHp then return end
+
+    ply:SetHealth(newHp)
 end)
 
 -------------
@@ -68,6 +92,7 @@ local function Cleanup()
     local jumps = cvars.Number("multijump_default_jumps", 1)
     for _, p in PlayerIterator() do
         timer.Remove("TTTGmrGachaPrize_" .. p:SteamID64())
+        p.TTTGamerSpaghettiHealTime = nil
         p:ClearProperty("TTTGamerHasUniquePrize", p)
         p:ClearProperty("TTTGamerCheetoMarked")
         if p.SetMaxJumpLevel then
