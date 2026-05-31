@@ -32,12 +32,13 @@ ROLE.translations = {
     }
 }
 
+RegisterRole(ROLE)
+
 EQUIP_GAMER_DORITOS   = EQUIP_GAMER_DORITOS   or GenerateNewEquipmentID()
 EQUIP_GAMER_MTDEW     = EQUIP_GAMER_MTDEW     or GenerateNewEquipmentID()
 EQUIP_GAMER_CHEETOS   = EQUIP_GAMER_CHEETOS   or GenerateNewEquipmentID()
 EQUIP_GAMER_SPAGHETTI = EQUIP_GAMER_SPAGHETTI or GenerateNewEquipmentID()
 EQUIP_GAMER_MILK      = EQUIP_GAMER_MILK      or GenerateNewEquipmentID()
-EQUIP_GAMER_GACHA     = EQUIP_GAMER_GACHA     or GenerateNewEquipmentID()
 
 local function InitializeEquipment()
     if DefaultEquipment then
@@ -46,8 +47,7 @@ local function InitializeEquipment()
             EQUIP_GAMER_MTDEW,
             EQUIP_GAMER_CHEETOS,
             EQUIP_GAMER_SPAGHETTI,
-            EQUIP_GAMER_MILK,
-            EQUIP_GAMER_GACHA
+            EQUIP_GAMER_MILK
         }
     end
 
@@ -111,25 +111,12 @@ local function InitializeEquipment()
                 norandom = true
             })
         end
-
-        if not table.HasItemWithPropertyValue(EquipmentItems[ROLE_GAMER], "id", EQUIP_GAMER_GACHA) then
-            TableInsert(EquipmentItems[ROLE_GAMER], {
-                id = EQUIP_GAMER_GACHA,
-                type = "item_passive",
-                material = "vgui/ttt/gamer/icon_gacha",
-                name = "item_gamer_gacha",
-                desc = "item_gamer_gacha_desc",
-                norandom = true
-            })
-        end
     end
 end
 InitializeEquipment()
 
 hook.Add("Initialize", "Gamer_Equipment_Initialize", InitializeEquipment)
 hook.Add("TTTPrepareRound", "Gamer_Equipment_Initialize", InitializeEquipment)
-
-RegisterRole(ROLE)
 
 GAMER = GAMER or {}
 GAMER.Rarities = GAMER.Rarities or {

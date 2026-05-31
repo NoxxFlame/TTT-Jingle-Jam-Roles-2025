@@ -451,3 +451,5 @@ AddHook("HUDPaint", "Gamer_HUDPaint", function()
     -- Cover
     DrawOutlinedRect(boxMaxX - (ballRadius * 4), boxMaxY + bodyHeight - bodyOverlap - (ballRadius * 4), ballRadius * 3, (ballRadius * 4) * outputHeight, 200, 200, 200)
 end)
+
+-- TODO: Stop all of this when the player dies or round state changes (End, Prep, etc.)
