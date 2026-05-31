@@ -479,4 +479,4 @@ local function Cleanup()
 end
 
 AddHook("TTTPrepareRound", "Gamer_TTTPrepareRound", Cleanup)
-AddHook("TTTEndRound", "Gamer_TTTPrepareRound", Cleanup)
+AddHook("TTTEndRound", "Gamer_TTTEndRound", Cleanup)
