@@ -201,6 +201,7 @@ local function AnimateGacha()
     -- Reset
     timer.Create("TTTGmrGacha_Reset", GAMER.Config.Timing.Animations.Reset, 1, ResetGacha)
 end
+-- TODO: Remove this
 concommand.Add("startgacha", function()
     if isAnimating then return end
 

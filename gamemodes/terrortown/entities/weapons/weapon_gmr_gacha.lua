@@ -134,5 +134,3 @@ function SWEP:PrimaryAttack()
 end
 
 function SWEP:DryFire() return false end
-
--- TODO: End all prize effects on round state changes (End, Prep, etc.)
