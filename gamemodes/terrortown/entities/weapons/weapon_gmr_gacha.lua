@@ -109,6 +109,8 @@ function SWEP:PrimaryAttack()
 
     if owner:IsRoleAbilityDisabled() then return end
 
+    owner:LagCompensation(true)
+
     self:SetClip1(ammo - 1)
     self:SendWeaponAnim(ACT_SLAM_DETONATOR_DETONATE)
 
@@ -131,6 +133,8 @@ function SWEP:PrimaryAttack()
             self:Remove()
         end
     end
+
+    owner:LagCompensation(false)
 end
 
 function SWEP:DryFire() return false end

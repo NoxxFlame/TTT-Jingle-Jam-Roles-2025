@@ -4,13 +4,12 @@ if CLIENT then
     SWEP.PrintName          = "Cheeto Fingers"
     SWEP.Slot               = 8
 
-    SWEP.ViewModelFOV       = 10
+    SWEP.ViewModelFOV       = 90
     SWEP.DrawCrosshair      = false
     SWEP.ViewModelFlip      = false
 end
 
--- TODO: Use a different model
-SWEP.ViewModel              = ""
+SWEP.ViewModel 				= "models/weapons/v_knife_other_thefinger.mdl"
 SWEP.WorldModel             = ""
 SWEP.Weight                 = 2
 
@@ -29,7 +28,7 @@ SWEP.UseHands               = true
 SWEP.LimitedStock           = true
 SWEP.AmmoEnt                = nil
 
-SWEP.Primary.Delay          = 1
+SWEP.Primary.Delay          = 2
 SWEP.Primary.Automatic      = false
 SWEP.Primary.Cone           = 0
 SWEP.Primary.Ammo           = nil
@@ -37,6 +36,11 @@ SWEP.Primary.ClipSize       = -1
 SWEP.Primary.ClipMax        = -1
 SWEP.Primary.DefaultClip    = 0
 SWEP.Primary.Sound          = ""
+
+function SWEP:Initialize()
+    -- TODO: Color the hand orange?
+    return self.BaseClass.Initialize(self)
+end
 
 function SWEP:OnRemove()
     if CLIENT and IsValid(self:GetOwner()) and self:GetOwner() == LocalPlayer() and self:GetOwner():Alive() then
@@ -58,16 +62,44 @@ function SWEP:PrimaryAttack()
 
     if owner:IsRoleAbilityDisabled() then return end
 
-    self:SetClip1(ammo - 1)
+    owner:LagCompensation(true)
+    owner:SetAnimation(PLAYER_ATTACK1)
 
-    -- TODO: Animation
-    -- TODO: Color the hand orange?
-    -- TODO: Mark someone as tracked (via halo?)
+    local spos = owner:GetShootPos()
+    local sdest = spos + (owner:GetAimVector() * 70)
 
-    if SERVER and self:Clip1() == 0 then
-        self:Remove()
+    local kmins = Vector(1, 1, 1) * -10
+    local kmaxs = Vector(1, 1, 1) * 10
+
+    local tr = util.TraceHull({start=spos, endpos=sdest, filter=owner, mask=MASK_SHOT_HULL, mins=kmins, maxs=kmaxs})
+
+    -- Hull might hit environment stuff that line does not hit
+    if not IsValid(tr.Entity) then
+        tr = util.TraceLine({start=spos, endpos=sdest, filter=owner, mask=MASK_SHOT_HULL})
     end
+
+    local hitEnt = tr.Entity
+    if IsValid(hitEnt) then
+        self:SendWeaponAnim(ACT_VM_HITCENTER)
+        self:SetClip1(ammo - 1)
+    else
+        self:SendWeaponAnim(ACT_VM_MISSCENTER)
+    end
+
+    if SERVER then
+        if IsPlayer(hitEnt) then
+            -- TODO: Mark someone as tracked (via halo?)
+        end
+
+        if self:Clip1() == 0 then
+            timer.Simple(self:SequenceDuration(), function()
+                if not IsValid(self) then return end
+                self:Remove()
+            end)
+        end
+    end
+
+    owner:LagCompensation(false)
 end
 
-function SWEP:DrawWorldModel(flags) end
-function SWEP:DrawWorldModelTranslucent(flags) end
+function SWEP:DryFire() return false end
