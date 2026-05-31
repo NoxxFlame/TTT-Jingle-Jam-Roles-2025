@@ -16,8 +16,15 @@ ROLE.nameplural = "Gamers"
 ROLE.nameext = "a Gamer"
 ROLE.nameshort = "gmr"
 
-ROLE.desc = [[]]
-ROLE.shortdesc = ""
+ROLE.desc = [[You are {role}! As {adetective}, HQ has given you
+special resources to find the {traitors}.
+
+Buy snacks from your equipment shop to
+get buffs and gacha rolls. Gacha can provide
+a range of buffs of varying quality.
+
+Press {menukey} to receive your equipment!]]
+ROLE.shortdesc = "Buys snacks and gacha rolls for a chance at legendary buffs"
 
 ROLE.team = ROLE_TEAM_DETECTIVE
 

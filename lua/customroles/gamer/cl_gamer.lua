@@ -520,7 +520,15 @@ AddHook("TTTTutorialRoleText", "Gamer_TTTTutorialRoleText", function(role, title
         local roleColor = GetRoleTeamColor(ROLE_TEAM_DETECTIVE)
         local html = "The " .. ROLE_STRINGS[ROLE_GAMER] .. " is a <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>detective role</span> whose goal is to help their team by buying snacks that gives them a buff and trying their luck with gacha rolls."
 
-        -- TODO
+        html = html .. "<span style='display: block; margin-top: 10px;'>Gacha rolls (gained by buying " .. LANG.GetTranslation("item_gamer_doritos") .. ") can result in buffs of varying qualities:"
+        html = html .. "<ul>"
+            for rarity = GAMER.Rarities.Common, GAMER.Rarities.Legendary do
+                local color = GAMER.Config.Rarities[rarity].Color
+                local name = LANG.GetTranslation(GAMER.Config.Rarities[rarity].Name)
+                html = html .. "<li><span style='color: rgb(" .. color.r .. ", " .. color.g .. ", " .. color.b .. ")'>" .. name .. " - " .. (GAMER.Config.Rarities[rarity].Chance * 100) .. "% chance</span></li>"
+            end
+        html = html .. "</ul>"
+        html = html .. "</span>"
 
         return html
     end
