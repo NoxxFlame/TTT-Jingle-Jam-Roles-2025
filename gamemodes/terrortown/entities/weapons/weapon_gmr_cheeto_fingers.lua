@@ -38,8 +38,14 @@ SWEP.Primary.DefaultClip    = 0
 SWEP.Primary.Sound          = ""
 
 function SWEP:Initialize()
+    self:SendWeaponAnim(ACT_VM_IDLE)
     -- TODO: Color the hand orange?
     return self.BaseClass.Initialize(self)
+end
+
+function SWEP:Deploy()
+    self:SendWeaponAnim(ACT_VM_IDLE)
+    return true
 end
 
 function SWEP:OnRemove()
