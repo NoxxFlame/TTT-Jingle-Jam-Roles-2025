@@ -1,5 +1,7 @@
+local cvars = cvars
 local hook = hook
 local player = player
+local timer = timer
 local util = util
 
 local AddHook = hook.Add
@@ -28,7 +30,9 @@ AddHook("TTTOrderedEquipment", "Gamer_TTTOrderedEquipment", function(ply, id, is
             gacha:SetClip1(math.max(0, gacha:Clip1()) + 2)
         end
     elseif isequip == EQUIP_GAMER_MTDEW then
-        -- TODO: 20% speed increase and triple jump
+        if ply.SetMaxJumpLevel then
+            ply:SetMaxJumpLevel(ply:GetMaxJumpLevel() + 1)
+        end
     elseif isequip == EQUIP_GAMER_CHEETOS then
         -- Heal the player to max
         local hp = ply:Health()
@@ -61,10 +65,14 @@ end)
 -------------
 
 local function Cleanup()
+    local jumps = cvars.Number("multijump_default_jumps", 1)
     for _, p in PlayerIterator() do
         timer.Remove("TTTGmrGachaPrize_" .. p:SteamID64())
         p:ClearProperty("TTTGamerHasUniquePrize", p)
         p:ClearProperty("TTTGamerCheetoMarked")
+        if p.SetMaxJumpLevel then
+            p:SetMaxJumpLevel(jumps)
+        end
     end
 end
 

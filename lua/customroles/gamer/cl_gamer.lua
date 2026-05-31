@@ -471,7 +471,9 @@ end)
 -- CHEETO TRACKING --
 ---------------------
 
-hook.Add("PreDrawHalos", "Gamer_Highlight_PreDrawHalos", function()
+AddHook("PreDrawHalos", "Gamer_Highlight_PreDrawHalos", function()
+    if GetRoundState() ~= ROUND_ACTIVE then return end
+
     if not client then
         client = LocalPlayer()
     end

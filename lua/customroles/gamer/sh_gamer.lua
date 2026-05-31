@@ -1,7 +1,9 @@
+local hook = hook
 local file = file
 local ipairs = ipairs
 local table = table
 
+local AddHook = hook.Add
 local FileFind = file.Find
 local TableHasValue = table.HasValue
 local TableInsert = table.insert
@@ -32,7 +34,21 @@ ROLE.translations = {
     }
 }
 
+local gamer_mtdew_speed_boost = CreateConVar("ttt_gamer_mtdew_speed_boost", "0.2", FCVAR_REPLICATED, "The amount to boost a player's speed after they drink a Mt. Dew (e.g. 0.2 = 20% = 120% total movement speed)", 0.1, 1)
+
+ROLE.convars = {
+    {
+        cvar = "ttt_gamer_mtdew_speed_boost",
+        type = ROLE_CONVAR_TYPE_NUM,
+        decimal = 2
+    }
+}
+
 RegisterRole(ROLE)
+
+---------------
+-- EQUIPMENT --
+---------------
 
 EQUIP_GAMER_DORITOS   = EQUIP_GAMER_DORITOS   or GenerateNewEquipmentID()
 EQUIP_GAMER_MTDEW     = EQUIP_GAMER_MTDEW     or GenerateNewEquipmentID()
@@ -118,6 +134,10 @@ InitializeEquipment()
 hook.Add("Initialize", "Gamer_Equipment_Initialize", InitializeEquipment)
 hook.Add("TTTPrepareRound", "Gamer_Equipment_Initialize", InitializeEquipment)
 
+------------
+-- CONFIG --
+------------
+
 GAMER = GAMER or {}
 GAMER.Rarities = GAMER.Rarities or {
     Common = 1,
@@ -161,10 +181,15 @@ GAMER.Config.Timing.Effect = GAMER.Config.Timing.Animations.Reset
 
 GAMER.Prizes = GAMER.Prizes or {}
 
+------------------------
+-- PRIZE REGISTRATION --
+------------------------
+
 local prize_meta =  {}
 prize_meta.__index = prize_meta
 
 function prize_meta:Start() end
+function prize_meta:CanStart(ply) end
 
 function GAMER.AddPrize(prize)
     if GAMER.Prizes[prize.Id] then return end
@@ -188,3 +213,13 @@ for _, fil in ipairs(files) do
     end
     include("customroles/gamer/prizes/" .. fil)
 end
+
+------------------------
+-- MT DEW SPEED BOOST --
+------------------------
+
+AddHook("TTTSpeedMultiplier", "Gamer_TTTSpeedMultiplier", function(ply, mults)
+    if ply:HasEquipmentItem(EQUIP_GAMER_MTDEW) then
+        TableInsert(mults, 1 + gamer_mtdew_speed_boost:GetFloat())
+    end
+end)

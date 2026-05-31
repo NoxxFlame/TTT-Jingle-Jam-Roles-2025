@@ -78,6 +78,7 @@ local function ChooseRandomPrize(ply)
     local prizes = {}
     for _, prize in pairs(GAMER.Prizes) do
         if prize.IsUnique and ply.TTTGamerHasUniquePrize then continue end
+        if not prize:CanStart(ply) then continue end
 
         -- TODO: What happens if a player gets a duplicate?
         if prize.Rarity == targetRarity then
