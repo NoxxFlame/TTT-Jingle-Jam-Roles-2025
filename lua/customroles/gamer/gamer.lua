@@ -22,6 +22,7 @@ local gamer_spaghetti_interval = CreateConVar("ttt_gamer_spaghetti_interval", "5
 -- ROLE LOGIC --
 ----------------
 
+local defaultJumpPower = 160
 AddHook("TTTOrderedEquipment", "Gamer_TTTOrderedEquipment", function(ply, id, isequip)
     if not isequip then return end
 
@@ -43,7 +44,7 @@ AddHook("TTTOrderedEquipment", "Gamer_TTTOrderedEquipment", function(ply, id, is
         if ply.SetMaxJumpLevel then
             ply:SetMaxJumpLevel(ply:GetMaxJumpLevel() + 1)
         else
-            ply:SetJumpPower(320)
+            ply:SetJumpPower(ply:GetJumpPower() + defaultJumpPower)
         end
         ply:EmitSound("gamer/mtdew.mp3", 100, 100, 1, CHAN_ITEM)
     elseif isequip == EQUIP_GAMER_CHEETOS then
@@ -106,7 +107,7 @@ local function Cleanup()
         if p.SetMaxJumpLevel then
             p:SetMaxJumpLevel(jumps)
         else
-            p:SetJumpPower(160)
+            p:SetJumpPower(defaultJumpPower)
         end
     end
 end
