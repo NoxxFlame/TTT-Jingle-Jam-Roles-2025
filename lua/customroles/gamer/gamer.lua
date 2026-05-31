@@ -43,7 +43,7 @@ AddHook("TTTOrderedEquipment", "Gamer_TTTOrderedEquipment", function(ply, id, is
         if ply.SetMaxJumpLevel then
             ply:SetMaxJumpLevel(ply:GetMaxJumpLevel() + 1)
         else
-            p:SetJumpPower(320)
+            ply:SetJumpPower(320)
         end
         ply:EmitSound("gamer/mtdew.mp3", 100, 100, 1, CHAN_ITEM)
     elseif isequip == EQUIP_GAMER_CHEETOS then
