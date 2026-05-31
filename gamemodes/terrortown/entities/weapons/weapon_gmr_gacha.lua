@@ -6,6 +6,7 @@ local pairs = pairs
 local table = table
 
 local MathRandom = math.random
+local TableHasValue = table.HasValue
 local TableInsert = table.insert
 
 if CLIENT then
