@@ -36,6 +36,7 @@ SWEP.UseHands               = true
 SWEP.LimitedStock           = true
 SWEP.AmmoEnt                = nil
 
+-- TODO: Set this to the roll time + some delay
 SWEP.Primary.Delay          = 1
 SWEP.Primary.Automatic      = false
 SWEP.Primary.Cone           = 0
