@@ -61,6 +61,8 @@ ROLE.translations = {
         ["gamer_prize_gun_desc"] = "Get a Lmao Bang gun",
         ["gamer_prize_bomberman_name"] = "Bomberman",
         ["gamer_prize_bomberman_desc"] = "Become immune to explosions, get a barrel spawner",
+        ["gamer_prize_sticksbreakbones_name"] = "Sticks Break Bones",
+        ["gamer_prize_sticksbreakbones_desc"] = "Immune to all but melee damage but can only do melee damage (with a 50% bonus)",
         -- Shop
         ["item_gamer_doritos"] = "Doritos ®",
         ["item_gamer_doritos_desc"] = "Gain 2 gacha rolls",
