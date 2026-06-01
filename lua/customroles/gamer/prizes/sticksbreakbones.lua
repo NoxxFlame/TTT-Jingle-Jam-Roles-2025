@@ -2,7 +2,7 @@ local PRIZE = {
     Id = "sticksbreakbones",
     Name = "gamer_prize_sticksbreakbones_name",
     Description = "gamer_prize_sticksbreakbones_desc",
-    Rarity = GAMER.Rarities.Epic,
+    Rarity = GAMER.Rarities.Rare,
     Icon = Material("vgui/ttt/gamer/prizes/sticksbreakbones.png"),
     IsUnique = true
 }

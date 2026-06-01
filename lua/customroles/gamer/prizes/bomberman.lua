@@ -2,7 +2,7 @@ local PRIZE = {
     Id = "bomberman",
     Name = "gamer_prize_bomberman_name",
     Description = "gamer_prize_bomberman_desc",
-    Rarity = GAMER.Rarities.Epic,
+    Rarity = GAMER.Rarities.Rare,
     Icon = Material("vgui/ttt/gamer/prizes/bomberman.png"),
     IsUnique = true
 }

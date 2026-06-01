@@ -63,6 +63,8 @@ ROLE.translations = {
         ["gamer_prize_bomberman_desc"] = "Become immune to explosions, get a barrel spawner",
         ["gamer_prize_sticksbreakbones_name"] = "Sticks Break Bones",
         ["gamer_prize_sticksbreakbones_desc"] = "Immune to all but melee damage but can only do melee damage (with a 50% bonus)",
+        ["gamer_prize_gambler_name"] = "Gambler",
+        ["gamer_prize_gambler_desc"] = "Your loadout is randomized every 10 seconds, however you gain a 50% damage bonus",
         -- Shop
         ["item_gamer_doritos"] = "Doritos ®",
         ["item_gamer_doritos_desc"] = "Gain 2 gacha rolls",
