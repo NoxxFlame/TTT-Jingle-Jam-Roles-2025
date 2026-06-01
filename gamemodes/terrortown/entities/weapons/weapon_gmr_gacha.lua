@@ -16,6 +16,8 @@ if CLIENT then
     SWEP.ViewModelFOV       = 60
     SWEP.DrawCrosshair      = false
     SWEP.ViewModelFlip      = false
+else
+    util.AddNetworkString("TTTGachaPrizeStart")
 end
 
 SWEP.ViewModel              = "models/weapons/c_slam.mdl"
@@ -89,11 +91,6 @@ local function ChooseRandomPrize(ply)
         end
     end
 
-    -- TODO: For testing
-    if #prizes == 0 then
-        prizes = {GAMER.Prizes["doritos"]}
-    end
-
     return prizes[MathRandom(#prizes)]
 end
 
@@ -125,6 +122,9 @@ function SWEP:PrimaryAttack()
         timer.Create("TTTGmrGachaPrize_" .. owner:SteamID64(), GAMER.Config.Timing.Effect, 1, function()
             if not IsPlayer(owner) then return end
             prize:Start(owner)
+            net.Start("TTTGachaPrizeStart")
+                net.WriteString(prize.Id)
+            net.Send(owner)
 
             if prize.IsUnique then
                 owner.TTTGamerHasUniquePrize = true
@@ -144,3 +144,12 @@ function SWEP:PrimaryAttack()
 end
 
 function SWEP:DryFire() return false end
+
+if CLIENT then
+    net.Receive("TTTGachaPrizeStart", function()
+        local prizeId = net.ReadString()
+        if GAMER.Prizes[prizeId] then
+            GAMER.Prizes[prizeId]:Start(LocalPlayer())
+        end
+    end)
+end

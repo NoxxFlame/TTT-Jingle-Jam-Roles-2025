@@ -1,10 +1,14 @@
 local hook = hook
 local file = file
 local ipairs = ipairs
+local math = math
+local player = player
 local table = table
 
 local AddHook = hook.Add
 local FileFind = file.Find
+local MathMax = math.max
+local PlayerIterator = player.Iterator
 local TableHasValue = table.HasValue
 local TableInsert = table.insert
 
@@ -35,7 +39,27 @@ ROLE.translations = {
         ["gamer_rarity_rare"] = "Rare",
         ["gamer_rarity_epic"] = "Epic",
         ["gamer_rarity_legendary"] = "Legendary",
+        -- Prizes
         ["gamer_prize_display_format"] = "{name} [{rarity}]",
+        ["gamer_prize_speed_name"] = "Speed Boost",
+        ["gamer_prize_speed_desc"] = "{amt}% speed increase",
+        ["gamer_prize_speed_jump_name"] = "Super Long Jump",
+        ["gamer_prize_speed_jump_desc"] = "50% speed increase, quad jump",
+        ["gamer_prize_jump_name"] = "{amt} Jump",
+        ["gamer_prize_jump_desc"] = "{amt} jump power",
+        ["gamer_prize_credit_name"] = "Quick Cash",
+        ["gamer_prize_credit_desc"] = "1 credit",
+        ["gamer_prize_recoil_common_name"] = "Shoot Straight",
+        ["gamer_prize_recoil_rare_name"] = "Shoot Straighter",
+        ["gamer_prize_recoil_legendary_name"] = "Shoot Straightest",
+        ["gamer_prize_recoil_desc"] = "{amt}% reduced recoil",
+        ["gamer_prize_shop_name"] = "Snack Raid",
+        ["gamer_prize_shop_desc"] = "Fill up with snacks{extra}",
+        ["gamer_prize_regen_name"] = "Top it Up",
+        ["gamer_prize_regen_desc"] = "Regenerate 15% health per second",
+        ["gamer_prize_gun_name"] = "Lmao Bang",
+        ["gamer_prize_gun_desc"] = "Get a Lmao Bang gun",
+        -- Shop
         ["item_gamer_doritos"] = "Doritos ®",
         ["item_gamer_doritos_desc"] = "Gain 2 gacha rolls",
         ["item_gamer_mtdew"] = "Mt. Dew ®",
@@ -193,6 +217,7 @@ GAMER.Rarities = GAMER.Rarities or {
 }
 GAMER.Config = GAMER.Config or {
     CheetoColor = Color(255, 137, 40),
+    JumpPower = 160,
     Rarities = {
         [GAMER.Rarities.Common] = { Name = "gamer_rarity_common", Color = Color(166, 166, 166), Chance = 0.50 },
         [GAMER.Rarities.Uncommon] = { Name = "gamer_rarity_uncommon", Color = Color(0, 182, 33), Chance = 0.20 },
@@ -201,6 +226,8 @@ GAMER.Config = GAMER.Config or {
         [GAMER.Rarities.Legendary] = { Name = "gamer_rarity_legendary", Color = Color(255, 192, 0), Chance = 0.05 }
     },
     Timing = {
+        -- Slightly after the prize text and image fades in
+        Effect = 5,
         Animations = {
             -- Move the balls around and rotate the handle
             Step1 = 1,
@@ -221,9 +248,6 @@ GAMER.Config = GAMER.Config or {
         }
     }
 }
--- The effect should happen at the same time the animation resets
-GAMER.Config.Timing.Effect = GAMER.Config.Timing.Animations.Reset
-
 GAMER.Prizes = GAMER.Prizes or {}
 
 ------------------------
@@ -233,8 +257,9 @@ GAMER.Prizes = GAMER.Prizes or {}
 local prize_meta =  {}
 prize_meta.__index = prize_meta
 
-function prize_meta:Start() end
-function prize_meta:CanStart(ply) end
+function prize_meta:Start(ply) end
+function prize_meta:End(ply) end
+function prize_meta:CanStart(ply) return true end
 
 function GAMER.AddPrize(prize)
     if GAMER.Prizes[prize.Id] then return end
@@ -268,3 +293,94 @@ AddHook("TTTSpeedMultiplier", "Gamer_TTTSpeedMultiplier", function(ply, mults)
         TableInsert(mults, 1 + gamer_mtdew_speed_boost:GetFloat())
     end
 end)
+
+-------------------
+-- RECOIL PRIZES --
+-------------------
+
+function GAMER.AdjustWeaponRecoil(weap, pct, net_tgt)
+    if weap.Primary and weap.Primary.Recoil then
+        local amt
+        if weap.Primary.OrigRecoil then
+            amt = weap.Primary.OrigRecoil * pct
+        else
+            amt = weap.Primary.Recoil * pct
+            weap.Primary.OrigRecoil = weap.Primary.Recoil
+        end
+        weap.Primary.Recoil = MathMax(0, weap.Primary.Recoil - amt)
+    end
+
+    if weap.Secondary and weap.Secondary.Recoil then
+        local amt
+        if weap.Secondary.OrigRecoil then
+            amt = weap.Secondary.OrigRecoil * pct
+        else
+            amt = weap.Secondary.Recoil * pct
+            weap.Secondary.OrigRecoil = weap.Secondary.Recoil
+        end
+        weap.Secondary.Recoil = MathMax(0, weap.Secondary.Recoil - amt)
+    end
+
+    if SERVER and net_tgt then
+        net.Start("TTTGamerRecoilAdjust")
+            net.WriteEntity(weap)
+            net.WriteFloat(pct)
+        net.Send(net_tgt)
+    end
+end
+
+function GAMER.ResetWeaponRecoil(weap, net_tgt)
+    if weap.Primary and weap.Primary.OrigRecoil then
+        weap.Primary.Recoil = weap.Primary.OrigRecoil
+        weap.Primary.OrigRecoil = nil
+    end
+
+    if weap.Secondary and weap.Secondary.OrigRecoil then
+        weap.Secondary.Recoil = weap.Secondary.OrigRecoil
+        weap.Secondary.OrigRecoil = nil
+    end
+
+    if SERVER and net_tgt then
+        net.Start("TTTGamerRecoilReset")
+            net.WriteEntity(weap)
+        net.Send(net_tgt)
+    end
+end
+
+if CLIENT then
+    net.Receive("TTTGamerRecoilAdjust", function()
+        local weap = net.ReadEntity()
+        local pct = net.ReadFloat()
+        if not IsValid(weap) then return end
+
+        GAMER.AdjustWeaponRecoil(weap, pct)
+    end)
+
+    net.Receive("TTTGamerRecoilReset", function()
+        local weap = net.ReadEntity()
+        if not IsValid(weap) then return end
+
+        GAMER.ResetWeaponRecoil(weap)
+    end)
+end
+
+-------------
+-- CLEANUP --
+-------------
+
+local function Cleanup()
+    for _, p in PlayerIterator() do
+        if not p.TTTGamerPrizes then return end
+
+        for _, pId in ipairs(p.TTTGamerPrizes) do
+            GAMER.Prizes[pId]:End(p)
+        end
+
+        if SERVER then
+            p.TTTGamerPrizes = nil
+        end
+    end
+end
+
+AddHook("TTTPrepareRound", "Gamer_Shared_TTTPrepareRound", Cleanup)
+AddHook("TTTEndRound", "Gamer_Shared_TTTEndRound", Cleanup)

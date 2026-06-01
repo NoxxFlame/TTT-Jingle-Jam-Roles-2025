@@ -120,6 +120,31 @@ ttt_clone_can_see_jesters   0   // Whether jesters are revealed (via head icons,
 ttt_clone_update_scoreboard 0   // Whether Clones show dead players as missing in action. Only used if "ttt_clone_is_independent" is enabled
 ```
 
+## ![Role Icon](/gamemodes/terrortown/content/materials/vgui/ttt/roles/gmr/tab_gmr.png) Gamer
+_Suggested By_: DragonsWithPizza\
+The Gamer is Special Detective role that can buy snacks that give them a buff and try their luck with gacha rolls.
+\
+\
+**ConVars**
+```cpp
+ttt_gamer_enabled                    0    // Whether or not a Gamer should spawn
+ttt_gamer_spawn_weight               1    // The weight assigned to spawning a Gamer
+ttt_gamer_min_players                0    // The minimum number of players required to spawn a Gamer
+ttt_gamer_starting_health            100  // The amount of health a Gamer starts with
+ttt_gamer_max_health                 100  // The maximum amount of health a Gamer can have
+ttt_gamer_milk_fall_damage_reduction 1    // The percentage of a player's fall damage to reduce after they drink choccy milk (e.g. 1 = 100% = 0 fall damage)
+ttt_gamer_milk_fart_interval_max     45   // The maximum amount of time (in seconds) between milk farts
+ttt_gamer_milk_fart_interval_min     15   // The minimum amount of time (in seconds) between milk farts
+ttt_gamer_milk_melee_damage_bonus    0.25 // The percentage to add to a player's melee damage after they drink choccy milk (e.g. 0.25 = 25% = 125% total melee damage)
+ttt_gamer_mtdew_speed_boost          0.2  // The percentage to boost a player's speed after they drink a Mt. Dew (e.g. 0.2 = 20% = 120% total movement speed)
+ttt_gamer_spaghetti_amount           5    // The amount of health a player should regain per interval after they eat spaghetti
+ttt_gamer_spaghetti_interval         5    // How often a player who eats spaghetti should regain health
+ttt_gamer_credits_starting           1    // The number of credits a Gamer should start with
+ttt_gamer_shop_sync                  0    // Whether Gamers should have all weapons that vanilla Detectives have in their weapon shop
+ttt_gamer_shop_random_percent        0    // The percent chance that a weapon in the shop will not be shown for the Gamer
+ttt_gamer_shop_random_enabled        0    // Whether shop randomization should run for the Gamer
+```
+
 ## ![Role Icon](/gamemodes/terrortown/content/materials/vgui/ttt/roles/mgb/tab_mgb.png) Mind Goblin
 _Suggested By_: BoboMcGraw\
 The Mind Goblin is a Jester role that possesses their killer, but wants to help them win. They can buff their killer and if their killer wins, so does the Mind Goblin.

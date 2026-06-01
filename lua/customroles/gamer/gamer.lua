@@ -13,6 +13,8 @@ local PlayerIterator = player.Iterator
 
 util.AddNetworkString("TTTGamerGachaStart")
 util.AddNetworkString("TTTGamerMilkFart")
+util.AddNetworkString("TTTGamerRecoilAdjust")
+util.AddNetworkString("TTTGamerRecoilReset")
 
 ------------------
 -- ROLE CONVARS --
@@ -29,7 +31,6 @@ local gamer_milk_fart_interval_max = CreateConVar("ttt_gamer_milk_fart_interval_
 -- ROLE LOGIC --
 ----------------
 
-local defaultJumpPower = 160
 AddHook("TTTOrderedEquipment", "Gamer_TTTOrderedEquipment", function(ply, id, isequip)
     if not isequip then return end
 
@@ -52,7 +53,7 @@ AddHook("TTTOrderedEquipment", "Gamer_TTTOrderedEquipment", function(ply, id, is
             if ply.SetMaxJumpLevel then
                 ply:SetMaxJumpLevel(ply:GetMaxJumpLevel() + 1)
             else
-                ply:SetJumpPower(ply:GetJumpPower() + defaultJumpPower)
+                ply:SetJumpPower(ply:GetJumpPower() + GAMER.Config.JumpPower)
             end
         end
         ply:EmitSound("gamer/mtdew.mp3", 100, 100, 1, CHAN_ITEM)
@@ -157,14 +158,13 @@ local function Cleanup()
         timer.Remove("TTTGmrGachaPrize_" .. p:SteamID64())
         p.TTTGamerSpaghettiHealTime = nil
         p.TTTGamerHasUniquePrize = nil
-        p.TTTGamerPrizes = nil
         p.TTTGamerNextMilkFart = nil
 
         p:ClearProperty("TTTGamerCheetoMarked")
         if p.SetMaxJumpLevel then
             p:SetMaxJumpLevel(jumps)
         else
-            p:SetJumpPower(defaultJumpPower)
+            p:SetJumpPower(GAMER.Config.JumpPower)
         end
     end
 end

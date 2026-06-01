@@ -449,8 +449,24 @@ AddHook("HUDPaint", "Gamer_HUDPaint", function()
         local r, g, b = GAMER.Config.Rarities[prizeBall.Rarity].Color:Unpack()
         local prizeColor = Color(r, g, b, prizeTextAlpha)
 
-        local name = LANG.GetTranslation(prizeBall.Name)
-        local desc = LANG.GetTranslation(prizeBall.Description)
+        local name
+        if prizeBall.NameParams then
+            name = LANG.GetParamTranslation(prizeBall.Name, prizeBall.NameParams)
+        else
+            name = LANG.GetTranslation(prizeBall.Name)
+        end
+
+        local desc
+        if prizeBall.DescriptionParams then
+            if type(prizeBall.DescriptionParams) == "function" then
+                desc = LANG.GetParamTranslation(prizeBall.Description, prizeBall.DescriptionParams())
+            else
+                desc = LANG.GetParamTranslation(prizeBall.Description, prizeBall.DescriptionParams)
+            end
+        else
+            desc = LANG.GetTranslation(prizeBall.Description)
+        end
+
         local rarity = LANG.GetTranslation(GAMER.Config.Rarities[prizeBall.Rarity].Name)
         local text = string.upper(LANG.GetParamTranslation("gamer_prize_display_format", { name = name, rarity = rarity }))
 
