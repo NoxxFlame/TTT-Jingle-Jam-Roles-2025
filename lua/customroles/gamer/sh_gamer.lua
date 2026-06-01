@@ -59,6 +59,8 @@ ROLE.translations = {
         ["gamer_prize_regen_desc"] = "Regenerate 15% health per second",
         ["gamer_prize_gun_name"] = "Lmao Bang",
         ["gamer_prize_gun_desc"] = "Get a Lmao Bang gun",
+        ["gamer_prize_bomberman_name"] = "Bomberman",
+        ["gamer_prize_bomberman_desc"] = "Become immune to explosions, get a barrel spawner",
         -- Shop
         ["item_gamer_doritos"] = "Doritos ®",
         ["item_gamer_doritos_desc"] = "Gain 2 gacha rolls",
