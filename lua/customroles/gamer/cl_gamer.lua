@@ -153,24 +153,30 @@ local function AnimateGacha()
     end
     xOffsetTarget = 0
 
+    surface.PlaySound("gamer/gacha_coin.mp3")
+
     -- Move the balls around and rotate the handle
     timer.Create("TTTGmrGacha_Step1", GAMER.Config.Timing.Animations.Step1, 1, function()
         RemoveBall()
         handleAngleTarget = (MathPi / 3)
+        surface.PlaySound("gamer/gacha_handle.mp3")
     end)
     timer.Create("TTTGmrGacha_Step2", GAMER.Config.Timing.Animations.Step2, 1, function()
         RemoveBall()
         handleAngleTarget = (MathPi / 3) * 2
+        surface.PlaySound("gamer/gacha_handle.mp3")
     end)
     timer.Create("TTTGmrGacha_Step3", GAMER.Config.Timing.Animations.Step3, 1, function()
         RemoveBall()
         handleAngleTarget = MathPi
+        surface.PlaySound("gamer/gacha_handle.mp3")
     end)
 
     -- Draw the prize ball
     timer.Create("TTTGmrGacha_Step4", GAMER.Config.Timing.Animations.Step4, 1, function()
         outputHeightTarget = 0.2
         drawPrizeBall = true
+        surface.PlaySound("gamer/gacha_ball_drop.mp3")
     end)
 
     -- Move the prize ball to the center of the screen
@@ -190,6 +196,7 @@ local function AnimateGacha()
     timer.Create("TTTGmrGacha_Step6", GAMER.Config.Timing.Animations.Step6, 1, function()
         prizeOpenTarget = 1
         drawPrize = true
+        surface.PlaySound("birthday.wav")
     end)
 
     -- Fade in the prize text and image

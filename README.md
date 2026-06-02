@@ -382,6 +382,10 @@ ttt_yorkshireman_update_scoreboard 0   // Whether Yorkshiremen show dead players
     - [Eating potato chips, mouth closed, crunchy 2](https://gfxsounds.com/sound-effect/eating-potato-chips-mouth-closed-crunchy-2/) by [Panda Wave](https://gfxsounds.com/blog/pandawave/)
     - [Eating crackers, crispy chewing](https://gfxsounds.com/sound-effect/eating-crackers-crispy-chewing/) by [Panda Wave](https://gfxsounds.com/blog/pandawave/)
     - [Spaghetti sucking, pasta, eating 2](https://gfxsounds.com/sound-effect/spaghetti-sucking-pasta-eating-2/) by [Panda Wave](https://gfxsounds.com/blog/pandawave/)
+  - The gacha machine sounds used by the Gamer:
+    - [Casino game, slot machine, insert coin, coins 3](https://gfxsounds.com/sound-effect/casino-game-slot-machine-insert-coin-coins-3/) by [Maxwell Dufresne](https://gfxsounds.com/blog/maxwell-dufresne/)
+    - [Click error](https://gfxsounds.com/sound-effect/click-error/) by [Lucas Huges](https://gfxsounds.com/blog/lucas-huges/)
+    - [Lighter drop on solid surface](https://gfxsounds.com/sound-effect/lighter-drop-on-solid-surface/) by [Mark Johnson](https://gfxsounds.com/blog/mark-johnson/)
 - [THE PIE GUY](https://steamcommunity.com/profiles/76561198082760562) for the [Pie Bomb](https://steamcommunity.com/sharedfiles/filedetails/?id=316765309) whose model is used by the Yorkshireman
 - [ajwuk2](https://steamcommunity.com/profiles/76561199043038286) for the [[TTT] Guard Dog](https://steamcommunity.com/sharedfiles/filedetails/?id=2120419714) which was used as the base for the Yorkshireman's Guard Dog
 - [BloodOrange1](https://steamcommunity.com/profiles/76561199164997872) for the [Dog SNPC (Reupload)](https://steamcommunity.com/sharedfiles/filedetails/?id=3513018735) whose model is used by the Yorkshireman's Guard Dog
