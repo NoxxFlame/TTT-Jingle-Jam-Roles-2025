@@ -34,6 +34,12 @@ ROLE.team = ROLE_TEAM_DETECTIVE
 
 ROLE.translations = {
     ["english"] = {
+        -- Weapons
+        ["gmr_cheeto_help_pri"] = "Use {primaryfire} to wipe Cheetos ® dust on a target",
+        ["gmr_cheeto_help_sec"] = "making it easier to track their movements",
+        ["gmr_gacha_help_pri"] = "Use {primaryfire} to use the gacha machine",
+        ["gmr_gacha_help_sec"] = "for a chance at legendary buffs",
+        -- Rarities
         ["gamer_rarity_common"] = "Common",
         ["gamer_rarity_uncommon"] = "Uncommon",
         ["gamer_rarity_rare"] = "Rare",

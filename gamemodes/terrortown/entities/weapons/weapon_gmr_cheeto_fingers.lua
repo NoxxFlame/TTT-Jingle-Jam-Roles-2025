@@ -39,6 +39,9 @@ SWEP.Primary.Sound          = ""
 
 function SWEP:Initialize()
     self:SendWeaponAnim(ACT_VM_IDLE)
+    if CLIENT then
+        self:AddHUDHelp("gmr_cheeto_help_pri", "gmr_cheeto_help_sec", true)
+    end
     return self.BaseClass.Initialize(self)
 end
 

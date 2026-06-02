@@ -51,6 +51,9 @@ SWEP.Primary.Sound          = ""
 function SWEP:Initialize()
     self.Primary.Delay = GAMER.Config.Timing.Animations.Reset + 1
     self:SendWeaponAnim(ACT_SLAM_DETONATOR_DRAW)
+    if CLIENT then
+        self:AddHUDHelp("gmr_gacha_help_pri", "gmr_gacha_help_sec", true)
+    end
     return self.BaseClass.Initialize(self)
 end
 
