@@ -15,6 +15,7 @@ local MathPi = math.pi
 local MathRand = math.Rand
 local MathSin = math.sin
 local PlayerIterator = player.Iterator
+local RenderView = render.RenderView
 local TableHasValue = table.HasValue
 local TableInsert = table.insert
 
@@ -110,7 +111,8 @@ local function CreateCamera()
             end
 
             renderingCamView = true
-            render.RenderView({
+            local old = DisableClipping(true)
+            RenderView({
                 origin = pos,
                 znear = 7,
                 fov = 65,
@@ -120,6 +122,7 @@ local function CreateCamera()
                 w = w,
                 h = h
             })
+	        DisableClipping(old)
             renderingCamView = false
         end
     end
@@ -500,23 +503,6 @@ end)
 -- DEBUFFS --
 -------------
 
--- Red Herring --
-
-AddHook("TTTShowSearchScreen", "Puppeteer_TTTShowSearchScreen", function(search)
-    if not IsPlayer(search.owner) then return end
-    if not search.TTTPuppeteerRedHerring then return end
-    if search.puppet_role then return end
-
-    search.puppet_role = search.role
-    if search.role == ROLE_INNOCENT then
-        search.role = ROLE_PUPPETEER
-    else
-        search.role = ROLE_TRAITOR
-    end
-
-    search.team = player.GetRoleTeam(search.role)
-end)
-
 -- Wanderer --
 
 local radiusVelocity = Vector(0, 0, 80)
@@ -741,7 +727,7 @@ end)
 AddHook("TTTTutorialRoleText", "Puppeteer_TTTTutorialRoleText", function(role, titleLabel)
     if role == ROLE_PUPPETEER then
         local roleColor = ROLE_COLORS[ROLE_TRAITOR]
-        local html = "The " .. ROLE_STRINGS[ROLE_PUPPETEER] .. " is a a member of the <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>traitor team</span whose goal is to control a targeted player, watching their movements and applying negative effects."
+        local html = "The " .. ROLE_STRINGS[ROLE_PUPPETEER] .. " is a member of the <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>traitor team</span> whose goal is to control a targeted player, watching their movements and applying negative effects."
 
         html = html .. "<span style='display: block; margin-top: 10px;'>Each target can only have <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>one debuff</span> active on them.</span>"
 
