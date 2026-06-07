@@ -503,23 +503,6 @@ end)
 -- DEBUFFS --
 -------------
 
--- Red Herring --
-
-AddHook("TTTShowSearchScreen", "Puppeteer_TTTShowSearchScreen", function(search)
-    if not IsPlayer(search.owner) then return end
-    if not search.TTTPuppeteerRedHerring then return end
-    if search.puppet_role then return end
-
-    search.puppet_role = search.role
-    if search.role == ROLE_INNOCENT then
-        search.role = ROLE_PUPPETEER
-    else
-        search.role = ROLE_TRAITOR
-    end
-
-    search.team = player.GetRoleTeam(search.role)
-end)
-
 -- Wanderer --
 
 local radiusVelocity = Vector(0, 0, 80)

@@ -41,9 +41,9 @@ local puppeteer_debuff_wanderer_distance = GetConVar("ttt_puppeteer_debuff_wande
 -------------------
 
 local function ClearState(ply)
+    ply.TTTPuppeteerRedHerring = nil
     ply:ClearProperty("TTTPuppeteerDebuffed")
     ply:ClearProperty("TTTPuppeteerDebuff")
-    ply:ClearProperty("TTTPuppeteerRedHerring")
     ply:ClearProperty("TTTPuppeteerWandererTarget", ply)
     ply:ClearProperty("TTTPuppeteerWandererEnd", ply)
     timer.Remove("Puppeteer_PinataWeaponDrop_" .. ply:SteamID64())
@@ -73,7 +73,7 @@ AddHook("PostPlayerDeath", "Puppeteer_PostPlayerDeath", function(ply)
     local debuff = ply.TTTPuppeteerDebuff
     ClearState(ply)
 
-    -- Start Piñata logic before clearing state
+    -- Start Piñata logic
     if debuff == PUPPETEER_DEBUFF_TYPE_PINATA then
         StartPinataDrop(ply)
     end
@@ -261,7 +261,7 @@ AddHook("TTTOnCorpseCreated", "Puppeteer_RedHerring_TTTOnCorpseCreated", functio
     if ply.TTTPuppeteerDebuff ~= PUPPETEER_DEBUFF_TYPE_REDHERRING then return end
     if rag.puppet_role then return end
 
-    ply:SetProperty("TTTPuppeteerRedHerring", true)
+    ply.TTTPuppeteerRedHerring = true
     rag.puppet_role = rag.was_role
     if rag.was_role == ROLE_INNOCENT then
         rag.was_role = ROLE_PUPPETEER
@@ -286,7 +286,7 @@ end)
 AddHook("PlayerSpawn", "Puppeteer_RedHerring_PlayerSpawn", function(ply)
     if not IsPlayer(ply) then return end
     if not ply.TTTPuppeteerRedHerring then return end
-    ply:ClearProperty("TTTPuppeteerRedHerring")
+    ply.TTTPuppeteerRedHerring = nil
 end)
 
 -- Wanderer --
@@ -364,14 +364,7 @@ end)
 
 AddHook("TTTPrepareRound", "Puppeteer_TTTPrepareRound", function()
     for _, v in PlayerIterator() do
-        v:ClearProperty("TTTPuppeteerDebuffed")
-        v:ClearProperty("TTTPuppeteerDebuff")
+        ClearState(v)
         v:ClearProperty("TTTPuppeteerDebuffsUsed", v)
-        v:ClearProperty("TTTPuppeteerRedHerring")
-        v:ClearProperty("TTTPuppeteerWandererTarget", v)
-        v:ClearProperty("TTTPuppeteerWandererEnd", v)
-        timer.Remove("Puppeteer_PinataWeaponDrop_" .. v:SteamID64())
-        timer.Remove("Puppeteer_Wanderer_" .. v:SteamID64())
-        timer.Remove("Puppeteer_FireWeapon_" .. v:SteamID64())
     end
 end)
