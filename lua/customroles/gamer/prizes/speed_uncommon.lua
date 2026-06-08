@@ -6,7 +6,7 @@ local PRIZE = {
     Id = "speed_uncommon",
     Name = "gamer_prize_speed_name",
     Description = "gamer_prize_speed_desc",
-    DescriptionParams = { amt = 15 },
+    DescriptionParams = { amt = 20 },
     Rarity = GAMER.Rarities.Uncommon,
     Icon = Material("vgui/ttt/gamer/prizes/speed.png")
 }
@@ -15,7 +15,7 @@ function PRIZE:Start(ply)
     hook.Add("TTTSpeedMultiplier", "Gamer_TTTSpeedMultiplier_Uncommon_" .. ply:SteamID64(), function(p, mults)
         if not IsPlayer(ply) then return end
         if ply ~= p then return end
-        TableInsert(mults, 1.15)
+        TableInsert(mults, 1.2)
     end)
 end
 

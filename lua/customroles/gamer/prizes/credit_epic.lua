@@ -11,4 +11,9 @@ function PRIZE:Start(ply)
     ply:AddCredits(1)
 end
 
+function PRIZE:CanStart(ply)
+    -- If gacha only mode is enabled a credit is the cost for a gacha roll so this prize just does nothing
+    return not GetConVar("ttt_gamer_gacha_only_mode"):GetBool()
+end
+
 GAMER.AddPrize(PRIZE)

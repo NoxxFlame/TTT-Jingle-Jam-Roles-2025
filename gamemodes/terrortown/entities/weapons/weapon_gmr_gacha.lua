@@ -48,8 +48,12 @@ SWEP.Primary.ClipMax        = -1
 SWEP.Primary.DefaultClip    = 0
 SWEP.Primary.Sound          = ""
 
+SWEP.InLoadoutFor = {}
+
+local gacha_only_mode = GetConVar("ttt_gamer_gacha_only_mode")
+
 function SWEP:Initialize()
-    self.Primary.Delay = GAMER.Config.Timing.Animations.Reset + 1
+    self.Primary.Delay = GAMER.Config.Timing.Animations.Reset
     self:SendWeaponAnim(ACT_SLAM_DETONATOR_DRAW)
     if CLIENT then
         self:AddHUDHelp("gmr_gacha_help_pri", "gmr_gacha_help_sec", true)
@@ -73,15 +77,21 @@ local function ChooseRandomPrize(ply)
     local targetRarity = GAMER.Rarities.Common
     if chance <= GAMER.Config.Rarities[GAMER.Rarities.Legendary].Chance then
         targetRarity = GAMER.Rarities.Legendary
-    elseif chance <= GAMER.Config.Rarities[GAMER.Rarities.Epic].Chance then
+    elseif chance <= GAMER.Config.Rarities[GAMER.Rarities.Epic].Chance + GAMER.Config.Rarities[GAMER.Rarities.Legendary].Chance then
         targetRarity = GAMER.Rarities.Epic
-    elseif chance <= GAMER.Config.Rarities[GAMER.Rarities.Rare].Chance then
+    elseif chance <= GAMER.Config.Rarities[GAMER.Rarities.Rare].Chance + GAMER.Config.Rarities[GAMER.Rarities.Epic].Chance + GAMER.Config.Rarities[GAMER.Rarities.Legendary].Chance then
         targetRarity = GAMER.Rarities.Rare
-    elseif chance <= GAMER.Config.Rarities[GAMER.Rarities.Uncommon].Chance then
+    elseif chance <= GAMER.Config.Rarities[GAMER.Rarities.Uncommon].Chance + GAMER.Config.Rarities[GAMER.Rarities.Rare].Chance + GAMER.Config.Rarities[GAMER.Rarities.Epic].Chance + GAMER.Config.Rarities[GAMER.Rarities.Legendary].Chance then
         targetRarity = GAMER.Rarities.Uncommon
     end
 
-    local prizes = {}
+    local prizes = {
+        [GAMER.Rarities.Common] = {},
+        [GAMER.Rarities.Uncommon] = {},
+        [GAMER.Rarities.Rare] = {},
+        [GAMER.Rarities.Epic] = {},
+        [GAMER.Rarities.Legendary] = {}
+    }
     for _, prize in pairs(GAMER.Prizes) do
         if prize.IsUnique and ply.TTTGamerHasUniquePrize then continue end
 
@@ -89,17 +99,36 @@ local function ChooseRandomPrize(ply)
         if TableHasValue(plyPrizes, prize.Id) then continue end
         if not prize:CanStart(ply) then continue end
 
-        if prize.Rarity == targetRarity then
-            TableInsert(prizes, prize)
-        end
+        TableInsert(prizes[prize.Rarity], prize)
     end
 
-    return prizes[MathRandom(#prizes)]
+    if (#prizes[targetRarity] > 0) then
+        return prizes[targetRarity][MathRandom(#prizes[targetRarity])]
+    end
+
+    -- If we can't find any prizes of the target rarity check the next lowest rarity and try again until we find a prize or run out of lower rarities
+    local nextRarity = targetRarity - 1
+    while nextRarity >= GAMER.Rarities.Common do
+        if (#prizes[nextRarity] > 0) then
+            return prizes[nextRarity][MathRandom(#prizes[nextRarity])]
+        end
+        nextRarity = nextRarity - 1
+    end
+
+    -- If there are still no prizes in any of the lower rarities, check the next highest rarity and try again until we find a prize or run out of higher rarities
+    nextRarity = targetRarity + 1
+    while nextRarity <= GAMER.Rarities.Legendary do
+        if (#prizes[nextRarity] > 0) then
+            return prizes[nextRarity][MathRandom(#prizes[nextRarity])]
+        end
+        nextRarity = nextRarity + 1
+    end
+
+    -- TODO: If there still aren't any prizes then what...
 end
 
 function SWEP:PrimaryAttack()
     if self:GetNextPrimaryFire() > CurTime() then return end
-    self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
 
     if GetRoundState() ~= ROUND_ACTIVE then return end
 
@@ -111,9 +140,17 @@ function SWEP:PrimaryAttack()
 
     if owner:IsRoleAbilityDisabled() then return end
 
+    self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
+
     owner:LagCompensation(true)
 
-    self:SetClip1(ammo - 1)
+    if gacha_only_mode:GetBool() then
+        if SERVER then
+            owner:SubtractCredits(1)
+        end
+    else
+        self:SetClip1(ammo - 1)
+    end
     self:SendWeaponAnim(ACT_SLAM_DETONATOR_DETONATE)
 
     if SERVER then
@@ -138,7 +175,7 @@ function SWEP:PrimaryAttack()
             owner.TTTGamerPrizes = prizes
         end)
 
-        if ammo == 1 then
+        if ammo == 1 and not gacha_only_mode:GetBool() then
             self:Remove()
         end
     end
@@ -147,6 +184,15 @@ function SWEP:PrimaryAttack()
 end
 
 function SWEP:DryFire() return false end
+
+function SWEP:Think()
+    local owner = self:GetOwner()
+    if not IsPlayer(owner) then return end
+
+    if gacha_only_mode:GetBool() then
+        self:SetClip1(owner:GetCredits())
+    end
+end
 
 if CLIENT then
     net.Receive("TTTGachaPrizeStart", function()

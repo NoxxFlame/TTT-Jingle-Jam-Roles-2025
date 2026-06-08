@@ -5,11 +5,14 @@ local net = net
 local player = player
 local timer = timer
 local util = util
+local table = table
 
 local AddHook = hook.Add
 local MathMin = math.min
 local MathRandom = math.random
 local PlayerIterator = player.Iterator
+local TableInsert = table.insert
+local TableEmpty = table.Empty
 
 util.AddNetworkString("TTTGamerGachaStart")
 util.AddNetworkString("TTTGamerMilkFart")
@@ -26,6 +29,8 @@ local gamer_milk_fall_damage_reduction = CreateConVar("ttt_gamer_milk_fall_damag
 local gamer_milk_melee_damage_bonus = CreateConVar("ttt_gamer_milk_melee_damage_bonus", "0.25", FCVAR_REPLICATED, "The percentage to add to a player's melee damage after they drink choccy milk (e.g. 0.25 = 25% = 125% total melee damage)", 0.1, 1)
 local gamer_milk_fart_interval_min = CreateConVar("ttt_gamer_milk_fart_interval_min", "15", FCVAR_REPLICATED, "The minimum amount of time (in seconds) between milk farts", 1, 30)
 local gamer_milk_fart_interval_max = CreateConVar("ttt_gamer_milk_fart_interval_max", "45", FCVAR_REPLICATED, "The maximum amount of time (in seconds) between milk farts", 1, 60)
+
+local gamer_gacha_only_mode = GetConVar("ttt_gamer_gacha_only_mode")
 
 ----------------
 -- ROLE LOGIC --
@@ -44,8 +49,12 @@ AddHook("TTTOrderedEquipment", "Gamer_TTTOrderedEquipment", function(ply, id, is
         end
 
         -- And give it some ammo
-        if IsValid(gacha) then
-            gacha:SetClip1(math.max(0, gacha:Clip1()) + 2)
+        if gamer_gacha_only_mode:GetBool() then
+            ply:AddCredits(2)
+        else
+            if IsValid(gacha) then
+                gacha:SetClip1(math.max(0, gacha:Clip1()) + 2)
+            end
         end
         ply:EmitSound("gamer/doritos.mp3", 100, 100, 1, CHAN_ITEM)
     elseif isequip == EQUIP_GAMER_MTDEW then
@@ -145,6 +154,15 @@ AddHook("EntityTakeDamage", "Gamer_Milk_EntityTakeDamage", function(ent, dmginfo
         if not att:IsActiveGamer() or att:IsRoleAbilityDisabled() then return end
         if not dmginfo:IsDamageType(DMG_SLASH) and not dmginfo:IsDamageType(DMG_CLUB) then return end
         dmginfo:ScaleDamage(1 + gamer_milk_melee_damage_bonus:GetFloat())
+    end
+end)
+
+AddHook("TTTUpdateRoleState", "Gamer_TTTUpdateRoleState", function()
+    local gacha = weapons.GetStored("weapon_gmr_gacha")
+    if GetConVar("ttt_gamer_gacha_only_mode"):GetBool() then
+        TableInsert(gacha.InLoadoutFor, ROLE_GAMER)
+    else
+        TableEmpty(gacha.InLoadoutFor)
     end
 end)
 

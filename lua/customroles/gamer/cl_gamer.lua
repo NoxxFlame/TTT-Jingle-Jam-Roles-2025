@@ -48,6 +48,9 @@ local friction = 0.01
 
 local gacha_offset_x = CreateClientConVar("ttt_gamer_gacha_offset_x", "50", true, false, "The screen offset from the left to render the gacha machine at, on the x axis (left-and-right)")
 local gacha_offset_y = CreateClientConVar("ttt_gamer_gacha_offset_y", "0", true, false, "The screen offset from the center to render the gacha machine at, on the y axes (up-and-down)")
+local gacha_only_mode = GetConVar("ttt_gamer_gacha_only_mode")
+local gacha_silly_prizes = GetConVar("ttt_gamer_gacha_silly_prizes")
+
 
 concommand.Add("ttt_gamer_gacha_offset_reset", function()
     gacha_offset_x:SetInt(gacha_offset_x:GetDefault())
@@ -136,7 +139,7 @@ local function AnimateGacha()
         for y = boxMinY + ballRadius, boxMaxY - ballRadius, ballRadius * 2 do
             offset = not offset
 
-            local rarity = MathRandom(GAMER.Rarities.Uncommon, GAMER.Rarities.Legendary)
+            local rarity = MathRandom(GAMER.Rarities.Common, GAMER.Rarities.Legendary)
             if offset then
                 CreateBall(x + MathRandom(-10, 10) + ballRadius, y + MathRandom(-10, 10), rarity)
             else
@@ -202,6 +205,35 @@ local function AnimateGacha()
     -- Fade in the prize text and image
     timer.Create("TTTGmrGacha_Step7", GAMER.Config.Timing.Animations.Step7, 1, function()
         prizeTextAlphaTarget = 255
+
+        local color = GAMER.Config.Rarities[prizeBall.Rarity].Color
+
+        local name
+        if gacha_silly_prizes:GetBool() and prizeBall.SillyName then
+            name = LANG.GetTranslation(prizeBall.SillyName)
+        else
+            if prizeBall.NameParams then
+                name = LANG.GetParamTranslation(prizeBall.Name, prizeBall.NameParams)
+            else
+                name = LANG.GetTranslation(prizeBall.Name)
+            end
+        end
+
+        local desc
+        if prizeBall.DescriptionParams then
+            if type(prizeBall.DescriptionParams) == "function" then
+                desc = LANG.GetParamTranslation(prizeBall.Description, prizeBall.DescriptionParams())
+            else
+                desc = LANG.GetParamTranslation(prizeBall.Description, prizeBall.DescriptionParams)
+            end
+        else
+            desc = LANG.GetTranslation(prizeBall.Description)
+        end
+
+        local rarity = LANG.GetTranslation(GAMER.Config.Rarities[prizeBall.Rarity].Name)
+
+        chat.AddText(color, name .. " [" .. rarity .. "]")
+        chat.AddText(desc)
     end)
 
     -- Fade out the prize ball, text, and image
@@ -449,7 +481,11 @@ AddHook("HUDPaint", "Gamer_HUDPaint", function()
     -- Prize
     if drawPrize then
         surface.SetDrawColor(255, 255, 255, prizeAlpha)
-        surface.SetMaterial(prizeBall.Icon)
+        if gacha_silly_prizes:GetBool() and prizeBall.SillyIcon then
+            surface.SetMaterial(prizeBall.SillyIcon)
+        else
+            surface.SetMaterial(prizeBall.Icon)
+        end
         surface.DrawTexturedRect(ScrW() / 2 - 128, ScrH() / 2 - 128, 256, 256)
         draw.NoTexture()
 
@@ -457,10 +493,14 @@ AddHook("HUDPaint", "Gamer_HUDPaint", function()
         local prizeColor = Color(r, g, b, prizeTextAlpha)
 
         local name
-        if prizeBall.NameParams then
-            name = LANG.GetParamTranslation(prizeBall.Name, prizeBall.NameParams)
+        if gacha_silly_prizes:GetBool() and prizeBall.SillyName then
+            name = LANG.GetTranslation(prizeBall.SillyName)
         else
-            name = LANG.GetTranslation(prizeBall.Name)
+            if prizeBall.NameParams then
+                name = LANG.GetParamTranslation(prizeBall.Name, prizeBall.NameParams)
+            else
+                name = LANG.GetTranslation(prizeBall.Name)
+            end
         end
 
         local desc
@@ -570,6 +610,19 @@ end
 AddHook("TTTPrepareRound", "Gamer_TTTPrepareRound", Cleanup)
 AddHook("TTTEndRound", "Gamer_TTTEndRound", Cleanup)
 
+
+----------------
+-- ROLE POPUP --
+----------------
+
+hook.Add("TTTRolePopupRoleStringOverride", "Gamer_TTTRolePopupRoleStringOverride", function(cli, roleString)
+    if not IsPlayer(cli) or not cli:IsGamer() then return end
+
+    if gacha_only_mode:GetBool() then
+        return roleString .. "_gacha_only"
+    end
+end)
+
 --------------
 -- TUTORIAL --
 --------------
@@ -577,9 +630,19 @@ AddHook("TTTEndRound", "Gamer_TTTEndRound", Cleanup)
 AddHook("TTTTutorialRoleText", "Gamer_TTTTutorialRoleText", function(role, titleLabel)
     if role == ROLE_GAMER then
         local roleColor = GetRoleTeamColor(ROLE_TEAM_DETECTIVE)
-        local html = "The " .. ROLE_STRINGS[ROLE_GAMER] .. " is a <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>detective role</span> whose goal is to help their team by buying snacks that gives them a buff and trying their luck with gacha rolls."
+        local html = "The " .. ROLE_STRINGS[ROLE_GAMER] .. " is a <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>detective role</span> whose goal is to help their team by"
+        if not gacha_only_mode:GetBool() then
+            html = html .. " buying snacks that gives them a buff and"
+        end
+        html = html .. " trying their luck with gacha rolls."
 
-        html = html .. "<span style='display: block; margin-top: 10px;'>Gacha rolls (gained by buying " .. LANG.GetTranslation("item_gamer_doritos") .. ") can result in buffs of varying qualities:"
+        html = html .. "<span style='display: block; margin-top: 10px;'>Gacha rolls "
+        if gacha_only_mode:GetBool() then
+            html = html .. " cost one credit each and "
+        else
+            html = html .. "(gained by buying \" .. LANG.GetTranslation(\"item_gamer_doritos\") .. \")"
+        end
+        html = html .. " can result in buffs of varying qualities:"
         html = html .. "<ul>"
             for rarity = GAMER.Rarities.Common, GAMER.Rarities.Legendary do
                 local color = GAMER.Config.Rarities[rarity].Color

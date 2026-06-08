@@ -11,6 +11,7 @@ local MathMax = math.max
 local PlayerIterator = player.Iterator
 local TableHasValue = table.HasValue
 local TableInsert = table.insert
+local TableRemove = table.remove
 
 local ROLE = {}
 
@@ -83,11 +84,22 @@ ROLE.translations = {
         ["item_gamer_spaghetti"] = "Mom's Spaghetti",
         ["item_gamer_spaghetti_desc"] = "Heals you periodically for the rest of the round",
         ["item_gamer_milk"] = "Choccy Milk",
-        ["item_gamer_milk_desc"] = "Reduces fall damage and increases melee damage. Hope you're not lactose intolerant though..."
+        ["item_gamer_milk_desc"] = "Reduces fall damage and increases melee damage. Hope you're not lactose intolerant though...",
+        -- Popup
+        ["info_popup_gamer_gacha_only"] =[[You are {role}! As {adetective}, HQ has given you
+special resources to find the {traitors}.
+
+Use your gacha machine to get prizes that can
+provide a range of buffs of varying quality.
+
+Press {menukey} to receive your equipment!]]
     }
 }
 
 local gamer_mtdew_speed_boost = CreateConVar("ttt_gamer_mtdew_speed_boost", "0.2", FCVAR_REPLICATED, "The percentage to boost a player's speed after they drink a Mt. Dew (e.g. 0.2 = 20% = 120% total movement speed)", 0.1, 1)
+local gamer_gacha_only_mode = CreateConVar("ttt_gamer_gacha_only_mode", "0", FCVAR_REPLICATED, "Whether the Gamer's unique shop items should instead be gacha prizes", 0, 1)
+
+CreateConVar("ttt_gamer_gacha_silly_prizes", "0", FCVAR_REPLICATED, "Whether the names and icons of gacha prizes should be silly gamer themed items instead of simple descriptions and icons", 0, 1)
 
 ROLE.convars = {
     {
@@ -124,6 +136,14 @@ ROLE.convars = {
         cvar = "ttt_gamer_milk_fart_interval_max",
         type = ROLE_CONVAR_TYPE_NUM,
         decimal = 0
+    },
+    {
+        cvar = "ttt_gamer_gacha_only_mode",
+        type = ROLE_CONVAR_TYPE_BOOL
+    },
+    {
+        cvar = "ttt_gamer_gacha_silly_prizes",
+        type = ROLE_CONVAR_TYPE_BOOL
     }
 }
 
@@ -155,60 +175,70 @@ local function InitializeEquipment()
             EquipmentItems[ROLE_GAMER] = {}
         end
 
-        -- If we haven't already registered this item, add it to the list
-        if not table.HasItemWithPropertyValue(EquipmentItems[ROLE_GAMER], "id", EQUIP_GAMER_DORITOS) then
-            TableInsert(EquipmentItems[ROLE_GAMER], {
-                id = EQUIP_GAMER_DORITOS,
-                type = "item_active",
-                material = "vgui/ttt/gamer/icon_gamer_doritos",
-                name = "item_gamer_doritos",
-                desc = "item_gamer_doritos_desc",
-                norandom = true
-            })
-        end
+        if gamer_gacha_only_mode:GetBool() then
+            -- If we are in gacha only mode then don't put these items in the Gamer's shop
+            for i = #EquipmentItems[ROLE_GAMER], 1, -1 do
+                local equipment = EquipmentItems[ROLE_GAMER][i]
+                if equipment["id"] == EQUIP_GAMER_DORITOS or equipment["id"] == EQUIP_GAMER_MTDEW or equipment["id"] == EQUIP_GAMER_CHEETOS or equipment["id"] == EQUIP_GAMER_SPAGHETTI or equipment["id"] == EQUIP_GAMER_MILK then
+                    TableRemove(EquipmentItems[ROLE_GAMER], i)
+                end
+            end
+        else
+            -- If we haven't already registered this item, add it to the list
+            if not table.HasItemWithPropertyValue(EquipmentItems[ROLE_GAMER], "id", EQUIP_GAMER_DORITOS) then
+                TableInsert(EquipmentItems[ROLE_GAMER], {
+                    id = EQUIP_GAMER_DORITOS,
+                    type = "item_active",
+                    material = "vgui/ttt/gamer/icon_gamer_doritos",
+                    name = "item_gamer_doritos",
+                    desc = "item_gamer_doritos_desc",
+                    norandom = true
+                })
+            end
 
-        if not table.HasItemWithPropertyValue(EquipmentItems[ROLE_GAMER], "id", EQUIP_GAMER_MTDEW) then
-            TableInsert(EquipmentItems[ROLE_GAMER], {
-                id = EQUIP_GAMER_MTDEW,
-                type = "item_passive",
-                material = "vgui/ttt/gamer/icon_gamer_mtdew",
-                name = "item_gamer_mtdew",
-                desc = "item_gamer_mtdew_desc",
-                norandom = true
-            })
-        end
+            if not table.HasItemWithPropertyValue(EquipmentItems[ROLE_GAMER], "id", EQUIP_GAMER_MTDEW) then
+                TableInsert(EquipmentItems[ROLE_GAMER], {
+                    id = EQUIP_GAMER_MTDEW,
+                    type = "item_passive",
+                    material = "vgui/ttt/gamer/icon_gamer_mtdew",
+                    name = "item_gamer_mtdew",
+                    desc = "item_gamer_mtdew_desc",
+                    norandom = true
+                })
+            end
 
-        if not table.HasItemWithPropertyValue(EquipmentItems[ROLE_GAMER], "id", EQUIP_GAMER_CHEETOS) then
-            TableInsert(EquipmentItems[ROLE_GAMER], {
-                id = EQUIP_GAMER_CHEETOS,
-                type = "item_active",
-                material = "vgui/ttt/gamer/icon_gamer_cheetos",
-                name = "item_gamer_cheetos",
-                desc = "item_gamer_cheetos_desc",
-                norandom = true
-            })
-        end
+            if not table.HasItemWithPropertyValue(EquipmentItems[ROLE_GAMER], "id", EQUIP_GAMER_CHEETOS) then
+                TableInsert(EquipmentItems[ROLE_GAMER], {
+                    id = EQUIP_GAMER_CHEETOS,
+                    type = "item_active",
+                    material = "vgui/ttt/gamer/icon_gamer_cheetos",
+                    name = "item_gamer_cheetos",
+                    desc = "item_gamer_cheetos_desc",
+                    norandom = true
+                })
+            end
 
-        if not table.HasItemWithPropertyValue(EquipmentItems[ROLE_GAMER], "id", EQUIP_GAMER_SPAGHETTI) then
-            TableInsert(EquipmentItems[ROLE_GAMER], {
-                id = EQUIP_GAMER_SPAGHETTI,
-                type = "item_passive",
-                material = "vgui/ttt/gamer/icon_gamer_spaghetti",
-                name = "item_gamer_spaghetti",
-                desc = "item_gamer_spaghetti_desc",
-                norandom = true
-            })
-        end
+            if not table.HasItemWithPropertyValue(EquipmentItems[ROLE_GAMER], "id", EQUIP_GAMER_SPAGHETTI) then
+                TableInsert(EquipmentItems[ROLE_GAMER], {
+                    id = EQUIP_GAMER_SPAGHETTI,
+                    type = "item_passive",
+                    material = "vgui/ttt/gamer/icon_gamer_spaghetti",
+                    name = "item_gamer_spaghetti",
+                    desc = "item_gamer_spaghetti_desc",
+                    norandom = true
+                })
+            end
 
-        if not table.HasItemWithPropertyValue(EquipmentItems[ROLE_GAMER], "id", EQUIP_GAMER_MILK) then
-            TableInsert(EquipmentItems[ROLE_GAMER], {
-                id = EQUIP_GAMER_MILK,
-                type = "item_passive",
-                material = "vgui/ttt/gamer/icon_gamer_milk",
-                name = "item_gamer_milk",
-                desc = "item_gamer_milk_desc",
-                norandom = true
-            })
+            if not table.HasItemWithPropertyValue(EquipmentItems[ROLE_GAMER], "id", EQUIP_GAMER_MILK) then
+                TableInsert(EquipmentItems[ROLE_GAMER], {
+                    id = EQUIP_GAMER_MILK,
+                    type = "item_passive",
+                    material = "vgui/ttt/gamer/icon_gamer_milk",
+                    name = "item_gamer_milk",
+                    desc = "item_gamer_milk_desc",
+                    norandom = true
+                })
+            end
         end
     end
 end
