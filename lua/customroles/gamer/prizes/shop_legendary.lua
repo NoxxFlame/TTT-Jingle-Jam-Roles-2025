@@ -9,7 +9,8 @@ local PRIZE = {
         return { extra = " and PAPs your active weapon" }
     end,
     Rarity = GAMER.Rarities.Legendary,
-    Icon = Material("vgui/ttt/gamer/prizes/shop.png")
+    Icon = Material("vgui/ttt/gamer/prizes/shop.png"),
+    SillyIcon = Material("vgui/ttt/gamer/prizes/snacks.png")
 }
 
 function PRIZE:Start(ply)

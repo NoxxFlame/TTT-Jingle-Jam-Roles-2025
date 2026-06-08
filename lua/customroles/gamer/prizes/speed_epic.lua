@@ -8,7 +8,9 @@ local PRIZE = {
     Description = "gamer_prize_speed_desc",
     DescriptionParams = { amt = 40 },
     Rarity = GAMER.Rarities.Epic,
-    Icon = Material("vgui/ttt/gamer/prizes/speed.png")
+    Icon = Material("vgui/ttt/gamer/prizes/speed.png"),
+    SillyName = "gamer_prize_monster_epic",
+    SillyIcon = Material("vgui/ttt/gamer/prizes/monster_epic.png")
 }
 
 function PRIZE:Start(ply)
@@ -17,6 +19,9 @@ function PRIZE:Start(ply)
         if ply ~= p then return end
         TableInsert(mults, 1.4)
     end)
+    if GetConVar("ttt_gamer_gacha_silly_prizes"):GetBool() then
+        ply:EmitSound("gamer/mtdew.mp3", 100, 100, 1, CHAN_ITEM)
+    end
 end
 
 function PRIZE:End(ply)

@@ -139,6 +139,8 @@ ttt_gamer_milk_melee_damage_bonus    0.25 // The percentage to add to a player's
 ttt_gamer_mtdew_speed_boost          0.2  // The percentage to boost a player's speed after they drink a Mt. Dew (e.g. 0.2 = 20% = 120% total movement speed)
 ttt_gamer_spaghetti_amount           5    // The amount of health a player should regain per interval after they eat spaghetti
 ttt_gamer_spaghetti_interval         5    // How often a player who eats spaghetti should regain health
+ttt_gamer_gacha_only_mode            0    // Whether the Gamer's unique shop items should instead be gacha prizes
+ttt_gamer_gacha_silly_prizes         0    // Whether the names and icons of gacha prizes should be silly gamer themed items instead of simple descriptions and icons
 ttt_gamer_credits_starting           1    // The number of credits a Gamer should start with
 ttt_gamer_shop_sync                  0    // Whether Gamers should have all weapons that vanilla Detectives have in their weapon shop
 ttt_gamer_shop_random_percent        0    // The percent chance that a weapon in the shop will not be shown for the Gamer

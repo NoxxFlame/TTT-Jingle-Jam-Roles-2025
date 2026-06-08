@@ -3,7 +3,9 @@ local PRIZE = {
     Name = "gamer_prize_credit_name",
     Description = "gamer_prize_credit_desc",
     Rarity = GAMER.Rarities.Epic,
-    Icon = Material("vgui/ttt/gamer/prizes/credit.png")
+    Icon = Material("vgui/ttt/gamer/prizes/credit.png"),
+    SillyName = "gamer_prize_token",
+    SillyIcon = Material("vgui/ttt/gamer/prizes/token.png")
 }
 
 function PRIZE:Start(ply)

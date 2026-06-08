@@ -4,7 +4,9 @@ local PRIZE = {
     Description = "gamer_prize_recoil_desc",
     DescriptionParams = { amt = "100" },
     Rarity = GAMER.Rarities.Legendary,
-    Icon = Material("vgui/ttt/gamer/prizes/recoil.png")
+    Icon = Material("vgui/ttt/gamer/prizes/recoil.png"),
+    SillyName = "gamer_prize_mouse_legendary",
+    SillyIcon = Material("vgui/ttt/gamer/prizes/mouse_legendary.png")
 }
 
 function PRIZE:Start(ply)

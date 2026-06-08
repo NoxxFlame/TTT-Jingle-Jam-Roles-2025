@@ -7,7 +7,9 @@ local PRIZE = {
     Name = "gamer_prize_speed_jump_name",
     Description = "gamer_prize_speed_jump_desc",
     Rarity = GAMER.Rarities.Legendary,
-    Icon = Material("vgui/ttt/gamer/prizes/speed_jump.png")
+    Icon = Material("vgui/ttt/gamer/prizes/speed_jump.png"),
+    SillyName = "gamer_prize_keyboard_legendary",
+    SillyIcon = Material("vgui/ttt/gamer/prizes/keyboard_legendary.png")
 }
 
 function PRIZE:Start(ply)

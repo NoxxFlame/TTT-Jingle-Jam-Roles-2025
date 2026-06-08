@@ -3,7 +3,8 @@ local PRIZE = {
     Name = "gamer_prize_gun_name",
     Description = "gamer_prize_gun_desc",
     Rarity = GAMER.Rarities.Rare,
-    Icon = Material("vgui/ttt/gamer/prizes/gun.png")
+    Icon = Material("vgui/ttt/gamer/prizes/gun.png"),
+    SillyIcon = Material("vgui/ttt/gamer/prizes/lmaobang.png")
 }
 
 local function GetWeaponId()

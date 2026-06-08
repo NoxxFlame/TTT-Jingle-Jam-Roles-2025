@@ -4,7 +4,9 @@ local PRIZE = {
     Description = "gamer_prize_gambler_desc",
     Rarity = GAMER.Rarities.Epic,
     Icon = Material("vgui/ttt/gamer/prizes/gambler.png"),
-    IsUnique = true
+    IsUnique = true,
+    SillyName = "gamer_prize_scratchcard",
+    SillyIcon = Material("vgui/ttt/gamer/prizes/scratchcard.png")
 }
 
 local function AssignRandomWeapons(ply)
