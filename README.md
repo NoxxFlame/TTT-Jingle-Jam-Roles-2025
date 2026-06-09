@@ -120,6 +120,33 @@ ttt_clone_can_see_jesters   0   // Whether jesters are revealed (via head icons,
 ttt_clone_update_scoreboard 0   // Whether Clones show dead players as missing in action. Only used if "ttt_clone_is_independent" is enabled
 ```
 
+## ![Role Icon](/gamemodes/terrortown/content/materials/vgui/ttt/roles/gmr/tab_gmr.png) Gamer
+_Suggested By_: DragonsWithPizza\
+The Gamer is Special Detective role that can buy snacks that give them a buff and try their luck with gacha rolls.
+\
+\
+**ConVars**
+```cpp
+ttt_gamer_enabled                    0    // Whether or not a Gamer should spawn
+ttt_gamer_spawn_weight               1    // The weight assigned to spawning a Gamer
+ttt_gamer_min_players                0    // The minimum number of players required to spawn a Gamer
+ttt_gamer_starting_health            100  // The amount of health a Gamer starts with
+ttt_gamer_max_health                 100  // The maximum amount of health a Gamer can have
+ttt_gamer_milk_fall_damage_reduction 1    // The percentage of a player's fall damage to reduce after they drink choccy milk (e.g. 1 = 100% = 0 fall damage)
+ttt_gamer_milk_fart_interval_max     45   // The maximum amount of time (in seconds) between milk farts
+ttt_gamer_milk_fart_interval_min     15   // The minimum amount of time (in seconds) between milk farts
+ttt_gamer_milk_melee_damage_bonus    0.25 // The percentage to add to a player's melee damage after they drink choccy milk (e.g. 0.25 = 25% = 125% total melee damage)
+ttt_gamer_mtdew_speed_boost          0.2  // The percentage to boost a player's speed after they drink a Mt. Dew (e.g. 0.2 = 20% = 120% total movement speed)
+ttt_gamer_spaghetti_amount           5    // The amount of health a player should regain per interval after they eat spaghetti
+ttt_gamer_spaghetti_interval         5    // How often a player who eats spaghetti should regain health
+ttt_gamer_gacha_only_mode            0    // Whether the Gamer's unique shop items should instead be gacha prizes
+ttt_gamer_gacha_silly_prizes         0    // Whether the names and icons of gacha prizes should be silly gamer themed items instead of simple descriptions and icons
+ttt_gamer_credits_starting           1    // The number of credits a Gamer should start with
+ttt_gamer_shop_sync                  0    // Whether Gamers should have all weapons that vanilla Detectives have in their weapon shop
+ttt_gamer_shop_random_percent        0    // The percent chance that a weapon in the shop will not be shown for the Gamer
+ttt_gamer_shop_random_enabled        0    // Whether shop randomization should run for the Gamer
+```
+
 ## ![Role Icon](/gamemodes/terrortown/content/materials/vgui/ttt/roles/mgb/tab_mgb.png) Mind Goblin
 _Suggested By_: BoboMcGraw\
 The Mind Goblin is a Jester role that possesses their killer, but wants to help them win. They can buff their killer and if their killer wins, so does the Mind Goblin.
@@ -331,7 +358,7 @@ ttt_yorkshireman_update_scoreboard 0   // Whether Yorkshiremen show dead players
 ```
 
 # Special Thanks
-- [Game icons](https://game-icons.net/) for the role icons
+- [Game icons](https://game-icons.net/) for the role icons and prize icons used by the Gamer
 - [avhatar](https://sketchfab.com/avhatar) for the [original model](https://sketchfab.com/3d-models/simple-safe-2e308cb3fe1d4676beb43e75fdd27e8e) for the Safekeeper
   - Licensed as [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 - [Famoso](https://steamcommunity.com/profiles/76561198308951372) for the GMod version of the [safe model](https://steamcommunity.com/sharedfiles/filedetails/?id=3030515670) for the Safekeeper
@@ -350,8 +377,22 @@ ttt_yorkshireman_update_scoreboard 0   // Whether Yorkshiremen show dead players
     - [Human whistle, short, fingers, call attention](https://gfxsounds.com/sound-effect/human-whistle-short-fingers-call-attention/) by [Cesar Brasil](https://gfxsounds.com/blog/cesar-brasil/)
     - [Human whistle, short, fingers, call attention 6](https://gfxsounds.com/sound-effect/human-whistle-short-fingers-call-attention-6/) by [Cesar Brasil](https://gfxsounds.com/blog/cesar-brasil/)
     - [Large dog barking, single bark 2](https://gfxsounds.com/sound-effect/large-dog-barking-single-bark-2/)
+  - The drinking and eating sounds used by the Gamer:
+    - [Drinking with a swallow and ah](https://gfxsounds.com/sound-effect/drinking-with-a-swallow-and-ah/)
+    - [Opening soda can](https://gfxsounds.com/sound-effect/opening-soda-can/)
+    - [Raspberry, short fart](https://gfxsounds.com/sound-effect/raspberry-short-fart/)
+    - [Eating potato chips, mouth closed, crunchy 2](https://gfxsounds.com/sound-effect/eating-potato-chips-mouth-closed-crunchy-2/) by [Panda Wave](https://gfxsounds.com/blog/pandawave/)
+    - [Eating crackers, crispy chewing](https://gfxsounds.com/sound-effect/eating-crackers-crispy-chewing/) by [Panda Wave](https://gfxsounds.com/blog/pandawave/)
+    - [Spaghetti sucking, pasta, eating 2](https://gfxsounds.com/sound-effect/spaghetti-sucking-pasta-eating-2/) by [Panda Wave](https://gfxsounds.com/blog/pandawave/)
+  - The gacha machine sounds used by the Gamer:
+    - [Casino game, slot machine, insert coin, coins 3](https://gfxsounds.com/sound-effect/casino-game-slot-machine-insert-coin-coins-3/) by [Maxwell Dufresne](https://gfxsounds.com/blog/maxwell-dufresne/)
+    - [Click error](https://gfxsounds.com/sound-effect/click-error/) by [Lucas Huges](https://gfxsounds.com/blog/lucas-huges/)
+    - [Lighter drop on solid surface](https://gfxsounds.com/sound-effect/lighter-drop-on-solid-surface/) by [Mark Johnson](https://gfxsounds.com/blog/mark-johnson/)
 - [THE PIE GUY](https://steamcommunity.com/profiles/76561198082760562) for the [Pie Bomb](https://steamcommunity.com/sharedfiles/filedetails/?id=316765309) whose model is used by the Yorkshireman
 - [ajwuk2](https://steamcommunity.com/profiles/76561199043038286) for the [[TTT] Guard Dog](https://steamcommunity.com/sharedfiles/filedetails/?id=2120419714) which was used as the base for the Yorkshireman's Guard Dog
 - [BloodOrange1](https://steamcommunity.com/profiles/76561199164997872) for the [Dog SNPC (Reupload)](https://steamcommunity.com/sharedfiles/filedetails/?id=3513018735) whose model is used by the Yorkshireman's Guard Dog
 - [Lykrast](https://steamcommunity.com/id/Lykrast) for the code and models used to create the Yorkshireman's double barrel shotgun taken from ['Lykrast's TTT Weapon Collection'](https://steamcommunity.com/sharedfiles/filedetails/?id=337994500)
 - [Fresh Garry](https://steamcommunity.com/id/Fresh_Garry) for the code for the Puppeteer's target camera view taken from [TTT Detective Playercam](https://steamcommunity.com/sharedfiles/filedetails/?id=942402787)
+- HellSpike for the [Poke Finger](https://gamebanana.com/mods/212872) used by the Gamer's Cheeto Fingers weapon
+- [pngimage.com](https://pngimg.com) for the [Spaghetti PNG](https://pngimg.com/image/85952) used by the Gamer's Mom's Spaghetti item
+- [pngall.com](https://www.pngall.com) for the [Chocolate Milk Transparent](https://www.pngall.com/chocolate-milk-png/download/145716/) used by the Gamer's Choccy Milk item
