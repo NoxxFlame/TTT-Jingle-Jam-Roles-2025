@@ -129,7 +129,6 @@ end
 
 function SWEP:PrimaryAttack()
     if self:GetNextPrimaryFire() > CurTime() then return end
-
     if GetRoundState() ~= ROUND_ACTIVE then return end
 
     local ammo = self:Clip1()
@@ -184,15 +183,6 @@ function SWEP:PrimaryAttack()
 end
 
 function SWEP:DryFire() return false end
-
-function SWEP:Think()
-    local owner = self:GetOwner()
-    if not IsPlayer(owner) then return end
-
-    if gacha_only_mode:GetBool() then
-        self:SetClip1(owner:GetCredits())
-    end
-end
 
 if CLIENT then
     net.Receive("TTTGachaPrizeStart", function()

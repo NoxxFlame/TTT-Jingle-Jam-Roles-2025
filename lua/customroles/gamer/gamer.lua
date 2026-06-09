@@ -166,6 +166,30 @@ AddHook("TTTUpdateRoleState", "Gamer_TTTUpdateRoleState", function()
     end
 end)
 
+-- In "Gacha-only" mode, credits are treated as ammunition for the Gacha Roller
+-- Initialize it with the same number of credits the player has to start
+AddHook("PlayerLoadout", "Gamer_PlayerLoadout", function(ply)
+    if not gamer_gacha_only_mode:GetBool() then return end
+    timer.Simple(0, function()
+        if not IsPlayer(ply) then return end
+
+        local gacha = ply:GetWeapon("weapon_gmr_gacha")
+        if not IsValid(gacha) then return end
+
+        gacha:SetClip1(ply:GetCredits())
+    end)
+end)
+
+-- And update it any time the player's credits change
+AddHook("TTTPlayerCreditsChanged", "Gamer_TTTPlayerCreditsChanged", function(ply, amt)
+    if not gamer_gacha_only_mode:GetBool() then return end
+
+    local gacha = ply:GetWeapon("weapon_gmr_gacha")
+    if not IsValid(gacha) then return end
+
+    gacha:SetClip1(ply:GetCredits())
+end)
+
 -------------
 -- CLEANUP --
 -------------
