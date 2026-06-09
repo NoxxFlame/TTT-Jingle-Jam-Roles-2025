@@ -132,6 +132,33 @@ local function ResetGacha()
     drawPrize = false
 end
 
+local function GetPrizeDetails()
+    local name
+    if gacha_silly_prizes:GetBool() and prizeBall.SillyName then
+        name = LANG.GetTranslation(prizeBall.SillyName)
+    else
+        if prizeBall.NameParams then
+            name = LANG.GetParamTranslation(prizeBall.Name, prizeBall.NameParams)
+        else
+            name = LANG.GetTranslation(prizeBall.Name)
+        end
+    end
+
+    local desc
+    if prizeBall.DescriptionParams then
+        if type(prizeBall.DescriptionParams) == "function" then
+            desc = LANG.GetParamTranslation(prizeBall.Description, prizeBall.DescriptionParams())
+        else
+            desc = LANG.GetParamTranslation(prizeBall.Description, prizeBall.DescriptionParams)
+        end
+    else
+        desc = LANG.GetTranslation(prizeBall.Description)
+    end
+
+    local rarity = LANG.GetTranslation(GAMER.Config.Rarities[prizeBall.Rarity].Name)
+    return name, desc, rarity, GAMER.Config.Rarities[prizeBall.Rarity].Color
+end
+
 local function AnimateGacha()
     isAnimating = true
     for x = boxMinX + ballRadius, boxMaxX - ballRadius, ballRadius * 2 do
@@ -206,32 +233,7 @@ local function AnimateGacha()
     timer.Create("TTTGmrGacha_Step7", GAMER.Config.Timing.Animations.Step7, 1, function()
         prizeTextAlphaTarget = 255
 
-        local color = GAMER.Config.Rarities[prizeBall.Rarity].Color
-
-        local name
-        if gacha_silly_prizes:GetBool() and prizeBall.SillyName then
-            name = LANG.GetTranslation(prizeBall.SillyName)
-        else
-            if prizeBall.NameParams then
-                name = LANG.GetParamTranslation(prizeBall.Name, prizeBall.NameParams)
-            else
-                name = LANG.GetTranslation(prizeBall.Name)
-            end
-        end
-
-        local desc
-        if prizeBall.DescriptionParams then
-            if type(prizeBall.DescriptionParams) == "function" then
-                desc = LANG.GetParamTranslation(prizeBall.Description, prizeBall.DescriptionParams())
-            else
-                desc = LANG.GetParamTranslation(prizeBall.Description, prizeBall.DescriptionParams)
-            end
-        else
-            desc = LANG.GetTranslation(prizeBall.Description)
-        end
-
-        local rarity = LANG.GetTranslation(GAMER.Config.Rarities[prizeBall.Rarity].Name)
-
+        local name, desc, rarity, color = GetPrizeDetails()
         chat.AddText(color, name .. " [" .. rarity .. "]")
         chat.AddText(desc)
     end)
@@ -489,32 +491,8 @@ AddHook("HUDPaint", "Gamer_HUDPaint", function()
         surface.DrawTexturedRect(ScrW() / 2 - 128, ScrH() / 2 - 128, 256, 256)
         draw.NoTexture()
 
-        local r, g, b = GAMER.Config.Rarities[prizeBall.Rarity].Color:Unpack()
-        local prizeColor = Color(r, g, b, prizeTextAlpha)
-
-        local name
-        if gacha_silly_prizes:GetBool() and prizeBall.SillyName then
-            name = LANG.GetTranslation(prizeBall.SillyName)
-        else
-            if prizeBall.NameParams then
-                name = LANG.GetParamTranslation(prizeBall.Name, prizeBall.NameParams)
-            else
-                name = LANG.GetTranslation(prizeBall.Name)
-            end
-        end
-
-        local desc
-        if prizeBall.DescriptionParams then
-            if type(prizeBall.DescriptionParams) == "function" then
-                desc = LANG.GetParamTranslation(prizeBall.Description, prizeBall.DescriptionParams())
-            else
-                desc = LANG.GetParamTranslation(prizeBall.Description, prizeBall.DescriptionParams)
-            end
-        else
-            desc = LANG.GetTranslation(prizeBall.Description)
-        end
-
-        local rarity = LANG.GetTranslation(GAMER.Config.Rarities[prizeBall.Rarity].Name)
+        local name, desc, rarity, color = GetPrizeDetails()
+        local prizeColor = ColorAlpha(color, prizeTextAlpha)
         local text = string.upper(LANG.GetParamTranslation("gamer_prize_display_format", { name = name, rarity = rarity }))
 
         DrawOutlinedText(text, "TraitorState", ScrW() / 2, ScrH() / 2 + 144, prizeColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
