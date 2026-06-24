@@ -101,6 +101,10 @@ ROLE.translations = {
         ["item_gamer_spaghetti_desc"] = "Heals you periodically for the rest of the round",
         ["item_gamer_milk"] = "Choccy Milk",
         ["item_gamer_milk_desc"] = "Reduces fall damage and increases melee damage. Hope you're not lactose intolerant though...",
+        -- Config
+        ["gamer_config_gacha_offset_x"] = "Gacha Machine X (horizontal) position",
+        ["gamer_config_gacha_offset_y"] = "Gacha Machine Y (vertical) position",
+        ["gamer_config_gacha_offset_reset"] = "Reset Gacha Machine position",
         -- Popup
         ["info_popup_gamer_gacha_only"] =[[You are {role}! As {adetective}, HQ has given you
 special resources to find the {traitors}.
