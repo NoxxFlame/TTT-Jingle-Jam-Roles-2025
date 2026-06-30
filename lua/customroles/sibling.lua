@@ -78,7 +78,7 @@ ROLE.convars =
 ROLE.translations = {
     ["english"] = {
         ["sibling_targetid"] = "YOUR SIBLING",
-        ["info_popup_sibling_hidden"] =[[You are {role}! You get copies of your
+        ["info_popup_sibling_hidden"] = [[You are {role}! You get copies of your
 target's shop purchases (and might steal them).]]
     }
 }
@@ -273,7 +273,7 @@ if CLIENT then
     ---------------
 
     AddHook("TTTTargetIDPlayerText", "Sibling_TTTTargetIDPlayerText", function(ent, cli, text, col, secondary_text)
-        if cli:IsSibling() and IsPlayer(ent) and ent:SteamID64() == cli.TTTSiblingTarget and not cli:IsRoleAbilityDisabled() and sibling_reveal_target:GetBool() then
+        if cli:IsSibling() and IsPlayer(ent) and ent:SteamID64() == cli.TTTSiblingTarget and sibling_reveal_target:GetBool() and not cli:IsRoleAbilityDisabled() then
             -- Don't overwrite text
             if text then
                 -- Don't overwrite secondary text either
@@ -288,8 +288,8 @@ if CLIENT then
     ROLE.istargetidoverridden = function(ply, target, showJester)
         if not ply:IsSibling() then return end
         if not IsPlayer(target) then return end
-        if ply:IsRoleAbilityDisabled() then return end
         if not sibling_reveal_target:GetBool() then return end
+        if ply:IsRoleAbilityDisabled() then return end
 
         ------ icon , ring , text
         return false, false, target:SteamID64() == ply.TTTSiblingTarget
@@ -300,7 +300,7 @@ if CLIENT then
     ----------------
 
     AddHook("TTTScoreboardPlayerName", "Sibling_TTTScoreboardPlayerName", function(ply, cli, text)
-        if cli:IsSibling() and ply:SteamID64() == cli.TTTSiblingTarget and not cli:IsRoleAbilityDisabled() and sibling_reveal_target:GetBool() then
+        if cli:IsSibling() and ply:SteamID64() == cli.TTTSiblingTarget and sibling_reveal_target:GetBool() and not cli:IsRoleAbilityDisabled()then
             local newText = " (" .. LANG.GetTranslation("sibling_targetid") .. ")"
             return ply:Nick() .. newText
         end
@@ -309,8 +309,8 @@ if CLIENT then
     ROLE.isscoreboardinfooverridden = function(ply, target)
         if not ply:IsSibling() then return end
         if not IsPlayer(target) then return end
-        if ply:IsRoleAbilityDisabled() then return end
         if not sibling_reveal_target:GetBool() then return end
+        if ply:IsRoleAbilityDisabled() then return end
 
         -- Shared logic
         local show = target:SteamID64() == ply.TTTSiblingTarget
@@ -334,7 +334,7 @@ if CLIENT then
         end
     end)
 
-    hook.Add("TTTRolePopupRoleStringOverride", "Sibling_TTTRolePopupRoleStringOverride", function(cli, roleString)
+    AddHook("TTTRolePopupRoleStringOverride", "Sibling_TTTRolePopupRoleStringOverride", function(cli, roleString)
         if not IsPlayer(cli) or not cli:IsSibling() then return end
 
         if not sibling_reveal_target:GetBool() then
